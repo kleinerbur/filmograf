@@ -18,7 +18,7 @@ def find_depth(left_name, right_name):
     extension = []
     depth = 1
 
-    while 1:
+    while queue:
         for name in queue:
             if name in checked:
                 continue
