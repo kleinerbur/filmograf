@@ -23,7 +23,7 @@ if [ ${should_download} -eq 1 ]; then
         "title.principals"
         "title.ratings")
     for dataset in ${DATASETS[*]}; do
-        time wget -O $dataset.tsv.gz https://datasets.imdbws.com/$dataset.tsv.gz
+        wget -O $dataset.tsv.gz https://datasets.imdbws.com/$dataset.tsv.gz
     done
 fi
 
@@ -36,5 +36,5 @@ sudo -u postgres psql -c "grant all privileges on database imdb to admin;"
 
 # Populate database with downloaded datasets
 apt install -y libpq-dev python-dev
-pip install psycopg2
-time s32cinemagoer.py . postgresql://admin:toor@localhost/imdb
+pip3 install psycopg2 Cinemagoer
+s32cinemagoer.py . postgresql://admin:toor@localhost/imdb
