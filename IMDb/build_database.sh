@@ -1,20 +1,40 @@
-#!/bin/sh
+#!/bin/bash
+
+if [ `id -u` -ne 0 ]; then
+    echo 'Please run this script as root.'
+    exit
+fi
+
+should_download=1
+while getopts "skip" flag
+do
+    case "${flag}" in
+        s) should_download=0;;
+    esac
+done
 
 # Download datasets
-wget https://datasets.imdbws.com/name.basics.tsv.gz
-wget https://datasets.imdbws.com/title.akas.tsv.gz
-wget https://datasets.imdbws.com/title.basics.tsv.gz
-wget https://datasets.imdbws.com/title.crew.tsv.gz
-wget https://datasets.imdbws.com/title.episode.tsv.gz
-wget https://datasets.imdbws.com/title.principals.tsv.gz
-wget https://datasets.imdbws.com/title.ratings.tsv.gz
+if [ ${should_download} -eq 1 ]; then
+    declare -a DATASETS=("name.basics"
+        "title.akas"
+        "title.basics"
+        "title.crew"
+        "title.episode"
+        "title.principals"
+        "title.ratings")
+    for dataset in ${DATASETS[*]}; do
+        time wget -O $dataset.tsv.gz https://datasets.imdbws.com/$dataset.tsv.gz
+    done
+fi
 
 # Create database
-sudo apt install postgresql
-sudo service postgresql start
-sudo -u postgres psql -c 'create database imdb;'
-sudo -u postgres psql -c 'create user admin with encrypted password toor;'
-sudo -u postgres psql -c 'grant all privileges on database imdb to admin;'
+apt install -y postgresql 
+service postgresql start
+sudo -u postgres psql -c "create database imdb;"
+sudo -u postgres psql -c "create user admin with encrypted password 'toor';"
+sudo -u postgres psql -c "grant all privileges on database imdb to admin;"
 
 # Populate database with downloaded datasets
-s32cinemagoer.py . postgresql://admin:toor@localhost/imdb
+apt install -y libpq-dev python-dev
+pip install psycopg2
+time s32cinemagoer.py . postgresql://admin:toor@localhost/imdb
