@@ -18,20 +18,6 @@ class Encoder(json.JSONEncoder):
         return obj.__dict__
 
 
-def api_call(function, *args, **kwargs):
-    """
-    Repeatedly calls the given function on a Cinemagoer() instance with the given arguments until it succeeds.
-    """
-    done = False
-    while not done:
-        try:
-            return_value = function(*args, **kwargs)
-            done = True
-        except ConnectionResetError or IMDbDataAccessError or timeout:
-            done = False
-    return return_value
-
-
 class Film:
     id: str
     title: str
@@ -43,7 +29,7 @@ class Film:
             self.title = title
             self.cast = cast
             return
-        film = api_call(Cinemagoer().get_movie, id)
+        film = Cinemagoer().get_movie(id)
         self.id    = id
         self.title = film['title']
         self.cast  = [actor.getID() for actor in film['cast']]
@@ -74,7 +60,7 @@ class Actor:
             self.name = name
             self.filmography = set(filmography)
             return
-        person = api_call(Cinemagoer().get_person, id)
+        person = Cinemagoer().get_person(id)
         self.id   = id
         self.name = person['name']
         filmography = person['filmography']
@@ -182,7 +168,7 @@ class FilmografAPI:
                     self.films.add(json.loads(json.dumps(film), object_hook=Film.fromJSON))
                 return
         
-        top_films = api_call(Cinemagoer().get_top250_movies)[0:LIMIT]
+        top_films = Cinemagoer().get_top250_movies()[0:LIMIT]
         PROGRESSBAR = ProgressBar(max_value=LIMIT)
         with concurrent.futures.ThreadPoolExecutor() as executor:
             for film in top_films:
@@ -204,8 +190,8 @@ class FilmografAPI:
         Returns None if no ID or name is given, or if there are no matching Actors in the databank.
         """
         filtered_list = []
-        if   id:   filtered_list = [actor for actor in db.actors if actor.id == id]
-        elif name: filtered_list = [actor for actor in db.actors if actor.name == name]
+        if   id:   filtered_list = [actor for actor in self.actors if actor.id == id]
+        elif name: filtered_list = [actor for actor in self.actors if actor.name == name]
         if not filtered_list:
             return None
         return filtered_list[0]
@@ -217,8 +203,8 @@ class FilmografAPI:
         Returns None if no ID or title is given, or if there are no matching Films in the databank.
         """
         filtered_list = []
-        if   id:    filtered_list = [film for film in db.films if film.id == id]
-        elif title: filtered_list = [film for film in db.films if film.title == title]
+        if   id:    filtered_list = [film for film in self.films if film.id == id]
+        elif title: filtered_list = [film for film in self.films if film.title == title]
         if not filtered_list:
             return None
         return filtered_list[0]
@@ -254,13 +240,8 @@ class FilmografAPI:
                 break
         return graph
 
-
 db = FilmografAPI()
 
 print(
-    "\n".join([str(film) for film in db.films]),
-    len(db.films),
-    len(db.actors),
-    sorted(db.actors, key=lambda actor: len(actor.filmography), reverse=True)[0],
-    sep='\n'
+    sorted(db.actors, key=lambda actor: len(actor.filmography), reverse=True)[:10]
 )

@@ -28,13 +28,14 @@ if [ ${should_download} -eq 1 ]; then
 fi
 
 # Create database
-apt install -y postgresql 
+apt-get -y install postgresql 
 service postgresql start
 sudo -u postgres psql -c "create database imdb;"
 sudo -u postgres psql -c "create user admin with encrypted password 'toor';"
 sudo -u postgres psql -c "grant all privileges on database imdb to admin;"
 
 # Populate database with downloaded datasets
-apt install -y libpq-dev python-dev
-pip3 install psycopg2 Cinemagoer
+apt-get -y install libpq-dev python-dev python3-mysqldb
+pip3 install psycopg2 Cinemagoer mysqlclient
 s32cinemagoer.py . postgresql://admin:toor@localhost/imdb
+# s32cinemagoer.py . mysql://filmograf:api@localhost/imdb
