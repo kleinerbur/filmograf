@@ -156,7 +156,7 @@ class DatabaseBuilder:
         if VERBOSE: self.progressbar.clear()
 
         # Some actors are credited for a role on a film's page, but not on the actor's page.
-        # This leads to their filmography being empty and them being isolated nodes in the databes.
+        # This leads to their filmography being empty and them being isolated nodes in the database.
         # To avoid this, these actors are weeded out before the database is populated.
         for actor in [actor for actor in self.actors if len(actor.filmography) == 0]:
             log.info(f'Removing {actor.name} (isolated node)')
@@ -416,5 +416,6 @@ class FilmografAPI:
     def __handle_exists(self):
         param = self.args.exists
         print(self.dbi.node_exists(param))
+
 
 FilmografAPI()
