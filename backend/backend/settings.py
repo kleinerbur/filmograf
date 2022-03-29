@@ -23,9 +23,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-0edi^68u_7=j+y^l-mr)$3&&@&#^1-aed9ha(^r=vtpy6#j726'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    'kleinerbur.com'
+]
 
 
 # Application definition
@@ -37,7 +41,22 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'filmografapi.apps.FilmografapiConfig',
+    'django_neomodel'
 ]
+
+n4j_username = 'guest'
+n4j_password = 'guest'
+n4j_uri = '4169d4dc.databases.neo4j.io'
+
+from neomodel import config
+config.DATABASE_URL = f'neo4j+s://{n4j_username}:{n4j_password}@{n4j_uri}'
+
+NEOMODEL_SIGNALS = True
+NEOMODEL_FORCE_TIMEZONE = False
+NEOMODEL_ENCRYPTED_CONNECTION = True
+NEOMODEL_MAX_POOL_SIZE = 50
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

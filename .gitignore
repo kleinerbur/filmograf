@@ -1,3 +1,4 @@
 *.tsv.gz
 *.log
 alphas/
+__pycache__

@@ -199,16 +199,16 @@ class DatabaseBuilder:
 
     def add_film_to_database(self, film:Film) -> None:
         try:
-            self.n4j.query(f'CREATE (f:Film {{id: "{film.id}", title:"{film.title}", imdb:"httpsL//www.imdb.com/title/tt{film.id}"}})')
+            self.n4j.query(f'CREATE (f:Film {{imdb_id:"{film.id}", title:"{film.title}", imdb_uri:"httpsL//www.imdb.com/title/tt{film.id}"}})')
         except ConstraintError:
             log.error(f'Film with ID {film.id} ("{film.title}") already exists, skipping')
         if VERBOSE: self.progressbar.update()
 
     def add_actor_to_database(self, actor:Actor) -> None:
         try:
-            self.n4j.query(f'CREATE (a:Actor {{id:"{actor.id}", name:"{actor.name}", imdb:"https://www.imdb.com/name/nm{actor.id}"}})')
+            self.n4j.query(f'CREATE (a:Actor {{imdb_id:"{actor.id}", name:"{actor.name}", imdb_uri:"https://www.imdb.com/name/nm{actor.id}"}})')
             for film_id in actor.filmography:
-                self.n4j.query(f'MATCH (actor:Actor {{id:"{actor.id}"}}), (film:Film {{id:"{film_id}"}}) MERGE (actor)-[:STARRED_IN]->(film)')
+                self.n4j.query(f'MATCH (actor:Actor {{imdb_id:"{actor.id}"}}), (film:Film {{imdb_id:"{film_id}"}}) MERGE (actor)-[:STARRED_IN]->(film)')
         except ConstraintError:
             log.error(f'Actor with ID {actor.id} ({actor.name}) already exists, skipping')
         if VERBOSE: self.progressbar.update()
@@ -285,7 +285,7 @@ class DatabaseInterface:
     def get_distance(self, left:str, right:str) -> str:
         assert self.node_exists(left),  f'No node in the database matches the given keyword: {left}'
         assert self.node_exists(right), f'No node in the database matches the given keyword: {right}'
-        return self.n4j.query(f'''
+        return json.dumps(self.n4j.query(f'''
             CALL {{
                 MATCH (left)
                 WHERE {self.__compare_against_actor('left', left)}
@@ -297,12 +297,12 @@ class DatabaseInterface:
                 RETURN right LIMIT 1
             }}
             MATCH path=shortestPath((left)-[*]-(right))
-            RETURN length(path) AS distance''')[0].data()
+            RETURN length(path) AS distance''')[0].data())
 
     def get_path(self, left:str, right:str) -> str:
         assert self.node_exists(left),  f'No node in the database matches the given keyword: {left}'
         assert self.node_exists(right), f'No node in the database matches the given keyword: {right}'
-        return self.n4j.query(f'''
+        return json.dumps(self.n4j.query(f'''
             CALL {{
                 MATCH (left)
                 WHERE {self.__compare_against_actor('left', left)}
@@ -314,7 +314,7 @@ class DatabaseInterface:
                 RETURN right LIMIT 1
             }}
             MATCH path=shortestPath((left)-[*]-(right))
-            RETURN path''')[0].data()
+            RETURN path''')[0].data())
             
     def get_graph(self, root:str, depth:int) -> str:
         
@@ -330,30 +330,28 @@ class DatabaseInterface:
         ''')]) # the graph is returned as a list of paths
 
 
-class FilmografAPI:
-    dbb:  DatabaseBuilder
-    dbi:  DatabaseInterface
+class Parser:
+    parser: argparse.ArgumentParser
     args: argparse.Namespace
 
     def __init__(self):
-        self.dbi = DatabaseInterface()
+        global NEO4J_URI, NEO4J_USERNAME, NEO4J_PASSWORD
 
-        parser = argparse.ArgumentParser()
-        parser.add_argument('-v', '--verbose', action='count', help='Toggle verbose output (-v for INFO, -vv for INFO with imdbpy logs, -vvv for DEBUG)')
-        parser.add_argument('-b', '--build-database', action='store_true', help='Creates a DatabaseBuilder object either by loading an existing snapshot or pulling data from IMDb, then populates the Neo4j database.')
-        parser.add_argument('-f', '--film-limit', metavar='<limit>', type=int, help='Number of films to collect data on (max 250)')
-        parser.add_argument('-c', '--cast-limit', metavar='<limit>', type=int, help='Number of actors for each film to collect data on')
-        parser.add_argument('-uri', metavar='<uri>', help='Neo4j database URI')
-        parser.add_argument('-u', '--user', metavar='<username>', help='Neo4j username')
-        parser.add_argument('-pw', '--password', metavar='<password>', help='Neo4j password')
-        parser.add_argument('-d', '--distance', nargs=2, metavar=('<name|IMDb ID|IMDb URL> <name|IMDb ID|IMDb URL>'), help='Returns the distance between two nodes')
-        parser.add_argument('-p', '--path', nargs=2, metavar=('<name|IMDb ID|IMDb URL> <name|IMDb ID|IMDb URL>'), help='Returns the shortest path between two nodes')
-        parser.add_argument('-g', '--graph', nargs=2, metavar=('<name|IMDb ID|IMDb URL> <depth>'), help='Returns a graph from the given root node up to the given depth')
-        parser.add_argument('-e', '--exists', metavar='<name|title|IMDb ID|IMDb URL>', help='Checks if a node with the given property exists in the database.')
-        self.args = parser.parse_args()
+        self.parser = argparse.ArgumentParser()
+        self.parser.add_argument('-v', '--verbose', action='count', help='Toggle verbose output (-v for INFO, -vv for INFO with imdbpy logs, -vvv for DEBUG)')
+        self.parser.add_argument('-b', '--build-database', action='store_true', help='Creates a DatabaseBuilder object either by loading an existing snapshot or pulling data from IMDb, then populates the Neo4j database.')
+        self.parser.add_argument('-f', '--film-limit', metavar='<limit>', type=int, help='Number of films to collect data on (max 250)')
+        self.parser.add_argument('-c', '--cast-limit', metavar='<limit>', type=int, help='Number of actors for each film to collect data on')
+        self.parser.add_argument('-uri', metavar='<uri>', help='Neo4j database URI')
+        self.parser.add_argument('-u', '--user', metavar='<username>', help='Neo4j username')
+        self.parser.add_argument('-pw', '--password', metavar='<password>', help='Neo4j password')
+        self.parser.add_argument('-d', '--distance', nargs=2, metavar=('<name|IMDb ID|IMDb URL> <name|IMDb ID|IMDb URL>'), help='Returns the distance between two nodes')
+        self.parser.add_argument('-p', '--path', nargs=2, metavar=('<name|IMDb ID|IMDb URL> <name|IMDb ID|IMDb URL>'), help='Returns the shortest path between two nodes')
+        self.parser.add_argument('-g', '--graph', nargs=2, metavar=('<name|IMDb ID|IMDb URL> <depth>'), help='Returns a graph from the given root node up to the given depth')
+        self.parser.add_argument('-e', '--exists', metavar='<name|title|IMDb ID|IMDb URL>', help='Checks if a node with the given property exists in the database.')
+        self.args = self.parser.parse_args()
 
         # set global variables
-        global NEO4J_URI, NEO4J_USERNAME, NEO4J_PASSWORD
         if self.args.uri:      NEO4J_URI      = self.args.uri
         if self.args.user:     NEO4J_USERNAME = self.args.user
         if self.args.password: NEO4J_PASSWORD = self.args.password
@@ -383,14 +381,13 @@ class FilmografAPI:
         global FILM_LIMIT, CAST_LIMIT
         if self.args.film_limit: FILM_LIMIT = int(self.args.film_limit)
         if self.args.cast_limit: CAST_LIMIT = int(self.args.cast_limit)
-        self.dbb = DatabaseBuilder()
-        self.dbb.populate_database()
-    
+        DatabaseBuilder().populate_database()
+
     def __handle_distance(self):
         left  = self.args.distance[0]
         right = self.args.distance[1]
         try:
-            print(self.dbi.get_distance(left, right))
+            print(DatabaseInterface().get_distance(left, right))
         except AssertionError as e:
             log.error(e)
 
@@ -398,7 +395,7 @@ class FilmografAPI:
         left  = self.args.path[0]
         right = self.args.path[1]
         try:
-            print(self.dbi.get_path(left, right))
+            print(DatabaseInterface().get_path(left, right))
         except AssertionError as e:
             log.error(e)
 
@@ -407,7 +404,7 @@ class FilmografAPI:
         try:
             depth = int(self.args.graph[1])
             try:
-                print(self.dbi.get_graph(root, depth))
+                print(DatabaseInterface().get_graph(root, depth))
             except AssertionError as e:
                 log.error(e)
         except TypeError as e:
@@ -415,7 +412,7 @@ class FilmografAPI:
 
     def __handle_exists(self):
         param = self.args.exists
-        print(self.dbi.node_exists(param))
+        print(DatabaseInterface().node_exists(param))
 
 
-FilmografAPI()
+Parser()
