@@ -75,7 +75,7 @@ def getPath(request):
         left  = request.GET.get("left", "")
         right = request.GET.get("right", "")
         try:
-            path = db.cypher_query(
+            nodes = db.cypher_query(
                 f'''
                 CALL {{
                     MATCH (left)
@@ -88,12 +88,26 @@ def getPath(request):
                     RETURN right LIMIT 1
                 }}
                 MATCH path=shortestPath((left)-[*]-(right))
-                WITH collect(path) as paths
-                CALL apoc.convert.toTree(paths) YIELD value
-                RETURN value
+                RETURN [n in nodes(path)| {{imdb_id: n.imdb_id, imdb_uri:n.imdb_uri, name: n.name, title: n.title}}] as nodes
                 '''
             )[0][0][0]
-            return JsonResponse({"path": path}, safe=False)
+            edges = db.cypher_query(
+                f'''
+                CALL {{
+                    MATCH (left)
+                    WHERE {compare_against_node('left', left)}
+                    RETURN left LIMIT 1
+                }}
+                CALL {{
+                    MATCH (right)
+                    WHERE {compare_against_node('right', right)}
+                    RETURN right LIMIT 1
+                }}
+                MATCH path=shortestPath((left)-[*]-(right))
+                RETURN [r in relationships(path)| {{start: startNode(r).imdb_id, end: endNode(r).imdb_id}}] as edges
+                '''
+            )[0][0][0]
+            return JsonResponse({"path": {"nodes": nodes, "edges": edges}}, safe=False)
         except Exception as e:
             return JsonResponse({"error": f"{e}"}, safe=False)
 
@@ -103,17 +117,30 @@ def getGraph(request):
         root  = request.GET.get("root", "")
         depth = request.GET.get("depth", 0)
         try:
-            graph = db.cypher_query(
+            nodes = db.cypher_query(
                 f'''
                 MATCH (root)
                 WHERE {compare_against_node('root', root)}
                 CALL apoc.path.spanningTree(root, {{ maxLevel: {depth} }})
                 YIELD path
-                WITH collect(path) as paths
-                CALL apoc.convert.toTree(paths) YIELD value
-                RETURN value
+                UNWIND nodes(path) AS nodes
+                WITH distinct nodes AS node
+                RETURN {{imdb_id: node.imdb_id, imdb_uri: node.imdb_uri, name: node.name, title: node.title}}
                 '''
-            )[0][0][0]
-            return JsonResponse({"graph": graph}, safe=False)
+            )[0]
+            nodes = [row[0] for row in nodes]
+            edges = db.cypher_query(
+                f'''
+                MATCH (root)
+                WHERE {compare_against_node('root', root)}
+                CALL apoc.path.spanningTree(root, {{ maxLevel: {depth} }})
+                YIELD path
+                UNWIND relationships(path) AS relationships
+                WITH distinct relationships AS r
+                RETURN {{start: startNode(r).imdb_id, end: endNode(r).imdb_id}}
+                '''
+            )[0]
+            edges = [row[0] for row in edges]
+            return JsonResponse({"graph": {"nodes": nodes, "edges": edges}}, safe=False)
         except Exception as e:
             return JsonResponse({"error": f"{e}"}, safe=False) 
