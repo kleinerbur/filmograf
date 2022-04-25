@@ -88,7 +88,7 @@ def getPath(request):
                     RETURN right LIMIT 1
                 }}
                 MATCH path=shortestPath((left)-[*]-(right))
-                RETURN [n in nodes(path)| {{imdb_id: n.imdb_id, imdb_uri:n.imdb_uri, name: n.name, title: n.title}}] as nodes
+                RETURN [n in nodes(path)| {{id: n.imdb_id, uri:n.imdb_uri, label: COALESCE(n.name, "") + COALESCE(n.title, "")}}] as nodes
                 '''
             )[0][0][0]
             edges = db.cypher_query(
@@ -104,7 +104,7 @@ def getPath(request):
                     RETURN right LIMIT 1
                 }}
                 MATCH path=shortestPath((left)-[*]-(right))
-                RETURN [r in relationships(path)| {{start: startNode(r).imdb_id, end: endNode(r).imdb_id}}] as edges
+                RETURN [r in relationships(path)| {{from: startNode(r).imdb_id, to: endNode(r).imdb_id}}] as edges
                 '''
             )[0][0][0]
             return JsonResponse({"path": {"nodes": nodes, "edges": edges}}, safe=False)
@@ -125,7 +125,7 @@ def getGraph(request):
                 YIELD path
                 UNWIND nodes(path) AS nodes
                 WITH distinct nodes AS node
-                RETURN {{imdb_id: node.imdb_id, imdb_uri: node.imdb_uri, name: node.name, title: node.title}}
+                RETURN {{id: toInteger(node.imdb_id), uri:node.imdb_uri, label: COALESCE(node.name, "") + COALESCE(node.title, "")}}
                 '''
             )[0]
             nodes = [row[0] for row in nodes]
@@ -137,7 +137,7 @@ def getGraph(request):
                 YIELD path
                 UNWIND relationships(path) AS relationships
                 WITH distinct relationships AS r
-                RETURN {{start: startNode(r).imdb_id, end: endNode(r).imdb_id}}
+                RETURN {{from: toInteger(startNode(r).imdb_id), to: toInteger(endNode(r).imdb_id), id: id(r)}}
                 '''
             )[0]
             edges = [row[0] for row in edges]

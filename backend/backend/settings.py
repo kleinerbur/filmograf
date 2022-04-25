@@ -28,7 +28,7 @@ DEBUG = False
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    'kleinerbur.com'
+    '*'
 ]
 
 
@@ -43,8 +43,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'filmografapi.apps.FilmografapiConfig',
-    'django_neomodel'
+    'django_neomodel',
+
+    'corsheaders'
 ]
+
+CORS_ORIGIN_ALLOW_ALL = True
+
 
 n4j_username = 'guest'
 n4j_password = 'guest'
@@ -66,6 +71,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware'
 ]
 
 ROOT_URLCONF = 'backend.urls'
