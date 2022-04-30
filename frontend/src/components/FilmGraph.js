@@ -1,23 +1,9 @@
-// import { useEffect } from 'react';
 import Graph from 'vis-react';
-
-import {useEffect, useState} from "react";
+import {useState, useEffect} from 'react';
 
 function FilmGraph() {
 
-    let [graph, setGraph] = useState("");
-    const url = "http://localhost:8000/api/graph?root=Emma%20Stone&depth=4";
-
-    useEffect(() => {
-        try {
-            // setGraph("");
-            fetch(url)
-            .then(result => result.json())
-            .then(json => {setGraph(json['graph']);})
-        } catch (error) {
-            console.log(error)
-        }
-    }, []);
+    var graph = {};
 
     const options = {
         height: "100%",
@@ -27,38 +13,65 @@ function FilmGraph() {
             hierarchical: false,
         },
         edges: {
-            width: 5,
+            width: 3,
             color: "#fff",
-            hoverWidth: 50,
             arrowStrikethrough: false,
         },
         physics: {
-            barnesHut: {
-              springConstant: 0,
-              avoidOverlap: 2
+            enabled: false,
+            solver: "repulsion",
+            repulsion: {
+                nodeDistance: 600,
+            },
+            stabilization: {
+                enabled: true,
+                iterations: 200,
+                updateInterval: 10,
+                onlyDynamicEdges: false,
+                fit: true
             }
         },
         nodes: {
-            color: "white",
-            // opacity: 0.5,
-            fixed: true,
-            font: {
-                face: 'Bahnschrift',
-                size: 20,
-                color: "black"
-            },
-            // shape: "circularImage",
-            shape: "circle",
-            widthConstraint: 20,
+            fixed: false
         },
-        interaction: { hoverEdges: true }
+        groups: {
+            films: {
+                size: 110,
+                shape: "image",
+                font: {
+                    size: 0
+                }
+            },
+            actors: {
+                size: 75,
+                shape: "circularImage",
+                borderWidth: 5,
+                color: "white",
+                font: {
+                    face: "Bahnschrift",
+                    color: "black",
+                    background: "white",
+                    size: 20,
+                    vadjust: -20
+                },
+                selected: {
+                    font: {
+                        face: "arial"
+                    }
+                }
+            }
+        },
+        interaction: {
+            hoverEdges: false,
+            hover: true,
+        }
     };
 
     return (
         <div>
-            {/* <Graph graph={graph} options={options}/> */}
+            <Graph graph={graph} options={options}/>
         </div>
-    )    
+    )
 };
 
 export default FilmGraph;

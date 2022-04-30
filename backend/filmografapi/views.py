@@ -119,20 +119,26 @@ def getGraph(request):
         try:
             nodes = db.cypher_query(
                 f'''
-                MATCH (root)
-                WHERE {compare_against_node('root', root)}
+                CALL {{
+                    MATCH (root)
+                    WHERE {compare_against_node('root', root)}
+                    RETURN root LIMIT 1
+                }}
                 CALL apoc.path.spanningTree(root, {{ maxLevel: {depth} }})
                 YIELD path
                 UNWIND nodes(path) AS nodes
                 WITH distinct nodes AS node
-                RETURN {{id: toInteger(node.imdb_id), uri:node.imdb_uri, label: COALESCE(node.name, "") + COALESCE(node.title, "")}}
+                RETURN {{group: node.group, image: node.image, id: toInteger(node.imdb_id), uri: node.imdb_uri, label: COALESCE(node.name, "") + COALESCE(node.title, "")}}
                 '''
             )[0]
             nodes = [row[0] for row in nodes]
             edges = db.cypher_query(
                 f'''
-                MATCH (root)
-                WHERE {compare_against_node('root', root)}
+                CALL {{
+                    MATCH (root)
+                    WHERE {compare_against_node('root', root)}
+                    RETURN root LIMIT 1
+                }}
                 CALL apoc.path.spanningTree(root, {{ maxLevel: {depth} }})
                 YIELD path
                 UNWIND relationships(path) AS relationships

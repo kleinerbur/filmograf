@@ -38,17 +38,20 @@ class DatabaseBuilderEncoder(SetEncoder):
 class Film:
     id: str
     title: str
+    image: str
     cast: Set[str]
 
-    def __init__(self, id, fromJSON=False, title=None, cast=None) -> None:
+    def __init__(self, id, fromJSON=False, title=None, cast=None, image=None) -> None:
         if fromJSON:
             self.id = id
             self.title = title
             self.cast = cast
+            self.image = image
             return
         film = Cinemagoer().get_movie(id)
         self.id    = id
         self.title = film['title']
+        self.image = film['cover url'].split("_V1")[0]
         self.cast  = [actor.getID() for actor in film['cast'][:CAST_LIMIT]]
 
     def toJSON(self) -> str:
@@ -57,23 +60,31 @@ class Film:
 
     def fromJSON(json_dict) -> None:
         '''Creates a new Film object from data from a JSON dictionary.'''
-        return Film(fromJSON=True, id=json_dict['id'], title=json_dict['title'], cast=json_dict['cast'])
+        return Film(fromJSON=True, id=json_dict['id'], title=json_dict['title'], cast=json_dict['cast'], image=json_dict['image'])
 
 
 class Actor:
     id: str
     name: str
+    image: str
     filmography: Set[str]
     
-    def __init__(self, id:str, films:Set[Film]=set(), fromJSON:bool=False, name:str=None, filmography:Set[str]=None) -> None:
+    def __init__(self, id:str, films:Set[Film]=set(), fromJSON:bool=False, name:str=None, filmography:Set[str]=None, image=None) -> None:
         if fromJSON:
             self.id = id
             self.name = name
             self.filmography = set(filmography)
+            self.image = image
             return
         person = Cinemagoer().get_person(id)
         self.id   = id
         self.name = person['name']
+
+        try:
+            self.image = person['headshot'].split("_V1")[0]
+        except Exception:
+            self.image = "https://t4.ftcdn.net/jpg/00/64/67/63/360_F_64676383_LdbmhiNM6Ypzb3FM4PPuFP9rHe7ri8Ju.jpg"
+        
         filmography = []
         if 'actor'   in person['filmography']: filmography += person['filmography']['actor']
         if 'actress' in person['filmography']: filmography += person['filmography']['actress']
@@ -87,7 +98,7 @@ class Actor:
 
     def fromJSON(json_dict) -> None:
         '''Creates a new Actor object from data from a JSON dictionary.'''
-        return Actor(fromJSON=True, id=json_dict['id'], name=json_dict['name'], filmography=json_dict['filmography'])
+        return Actor(fromJSON=True, id=json_dict['id'], name=json_dict['name'], filmography=json_dict['filmography'], image=json_dict['image'])
 
 
 class Neo4jConnection:
@@ -181,7 +192,6 @@ class DatabaseBuilder:
 
     def populate_database(self) -> None:
         self.n4j = Neo4jConnection(NEO4J_URI, NEO4J_USERNAME, NEO4J_PASSWORD)
-
         log.info('Adding films to neo4j database')
         if VERBOSE: self.progressbar = tqdm(total=len(self.films), position=0, leave=False)
         with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -199,14 +209,14 @@ class DatabaseBuilder:
 
     def add_film_to_database(self, film:Film) -> None:
         try:
-            self.n4j.query(f'CREATE (f:Film {{imdb_id:"{film.id}", title:"{film.title}", imdb_uri:"httpsL//www.imdb.com/title/tt{film.id}"}})')
+            self.n4j.query(f'CREATE (f:Film {{group:"films", imdb_id:"{film.id}", title:"{film.title}", image:"{film.image}", imdb_uri:"https://www.imdb.com/title/tt{film.id}"}})')
         except ConstraintError:
             log.error(f'Film with ID {film.id} ("{film.title}") already exists, skipping')
         if VERBOSE: self.progressbar.update()
 
     def add_actor_to_database(self, actor:Actor) -> None:
         try:
-            self.n4j.query(f'CREATE (a:Actor {{imdb_id:"{actor.id}", name:"{actor.name}", imdb_uri:"https://www.imdb.com/name/nm{actor.id}"}})')
+            self.n4j.query(f'CREATE (a:Actor {{group:"actors", imdb_id:"{actor.id}", name:"{actor.name}", image:"{actor.image}", imdb_uri:"https://www.imdb.com/name/nm{actor.id}"}})')
             for film_id in actor.filmography:
                 self.n4j.query(f'MATCH (actor:Actor {{imdb_id:"{actor.id}"}}), (film:Film {{imdb_id:"{film_id}"}}) MERGE (actor)-[:STARRED_IN]->(film)')
         except ConstraintError:
