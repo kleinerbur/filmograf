@@ -6,7 +6,8 @@ from imdb import Cinemagoer
 from neo4j import GraphDatabase
 from neo4j.exceptions import ConstraintError
 from os import path
-from typing import Set
+from typing import List, Set
+from sqlalchemy import false
 from tqdm import tqdm
 
 NEO4J_USERNAME = 'guest'
@@ -41,7 +42,7 @@ class Film:
     image: str
     cast: Set[str]
 
-    def __init__(self, id, fromJSON=False, title=None, cast=None, image=None) -> None:
+    def __init__(self, id:str, fromJSON:bool=False, title:str=None, cast:Set[str]=None, image:str=None) -> None:
         if fromJSON:
             self.id = id
             self.title = title
@@ -129,10 +130,10 @@ class DatabaseBuilder:
     actors: Set[Actor]
     n4j:    Neo4jConnection
 
-    def __init__(self) -> None:
+    def __init__(self, force:bool=False) -> None:
         self.films  = set()
         self.actors = set()
-        if path.isfile('snapshot.json'):
+        if not force and path.isfile('snapshot.json'):
             self.load_snapshot('snapshot.json')
         else:
             self.pull_data()
@@ -359,6 +360,7 @@ class Parser:
         self.parser.add_argument('-p', '--path', nargs=2, metavar=('<name|IMDb ID|IMDb URL> <name|IMDb ID|IMDb URL>'), help='Returns the shortest path between two nodes')
         self.parser.add_argument('-g', '--graph', nargs=2, metavar=('<name|IMDb ID|IMDb URL> <depth>'), help='Returns a graph from the given root node up to the given depth')
         self.parser.add_argument('-e', '--exists', metavar='<name|title|IMDb ID|IMDb URL>', help='Checks if a node with the given property exists in the database.')
+        self.parser.add_argument('--force', action='store_true', help='Force pulling of new data even if a JSON snapshot is present.')
         self.args = self.parser.parse_args()
 
         # set global variables
@@ -391,7 +393,7 @@ class Parser:
         global FILM_LIMIT, CAST_LIMIT
         if self.args.film_limit: FILM_LIMIT = int(self.args.film_limit)
         if self.args.cast_limit: CAST_LIMIT = int(self.args.cast_limit)
-        DatabaseBuilder().populate_database()
+        DatabaseBuilder(self.args.force).populate_database()
 
     def __handle_distance(self):
         left  = self.args.distance[0]

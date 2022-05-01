@@ -19,6 +19,8 @@ def nodeExists(request):
                 '''
             )[0][0][0]
             return JsonResponse({"nodeExists": exists}, safe=False)
+        except IndexError:
+            return JsonResponse({})
         except Exception as e:
             return JsonResponse({"error": f"{e}"}, safe=False)
 
@@ -38,6 +40,8 @@ def getNode(request):
                 '''
             )[0][0][0]
             return JsonResponse(node, safe=False)
+        except IndexError:
+            return JsonResponse({})
         except Exception as e:
             return JsonResponse({"error": f"{e}"}, safe=False)
 
@@ -88,7 +92,7 @@ def getPath(request):
                     RETURN right LIMIT 1
                 }}
                 MATCH path=shortestPath((left)-[*]-(right))
-                RETURN [n in nodes(path)| {{id: n.imdb_id, uri:n.imdb_uri, label: COALESCE(n.name, "") + COALESCE(n.title, "")}}] as nodes
+                RETURN [node in nodes(path)| {{id: node.imdb_id, image: node.image, uri:node.imdb_uri, label: COALESCE(node.name, "") + COALESCE(node.title, "")}}] as nodes
                 '''
             )[0][0][0]
             edges = db.cypher_query(
@@ -108,6 +112,8 @@ def getPath(request):
                 '''
             )[0][0][0]
             return JsonResponse({"path": {"nodes": nodes, "edges": edges}}, safe=False)
+        except IndexError:
+            return JsonResponse({})
         except Exception as e:
             return JsonResponse({"error": f"{e}"}, safe=False)
 
@@ -148,5 +154,7 @@ def getGraph(request):
             )[0]
             edges = [row[0] for row in edges]
             return JsonResponse({"graph": {"nodes": nodes, "edges": edges}}, safe=False)
+        except IndexError:
+            return JsonResponse({})
         except Exception as e:
             return JsonResponse({"error": f"{e}"}, safe=False) 

@@ -3,6 +3,7 @@ import './App.css';
 import DepthSlider from './components/DepthSlider';
 import SearchBar from './components/SearchBar';
 import FilmGraph from './components/FilmGraph';
+import { sliderClasses } from '@mui/material';
 
 function App() {
   return (
@@ -12,21 +13,21 @@ function App() {
         {/* <h1 style={{fontFamily: "Bahnschrift", fontWeight: "lighter"}}>film-o-gráf</h1> */}
         
         <form id='settings'>
+        
           <SearchBar
             label='Színész / film'
             variant='filled'
             size='small'
             color='secondary'
             required/>
-            {/* error helperText="Nincs ilyen színész / film az adatbázisban."/>  */}
-          <DepthSlider
+        
+          <DepthSlider id='slider'
             aria-label='asdasd'
             valueLabelDisplay='auto'
             min={0} max={3} marks/>
+        
         </form>
-        {/* <div id='network'>
-          <FilmGraph/>
-        </div> */}
+          <FilmGraph mode='graph' root='Emma Stone' depth='2'/>
       </header>
     </div>
   );
