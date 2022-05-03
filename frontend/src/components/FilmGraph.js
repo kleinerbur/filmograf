@@ -1,5 +1,7 @@
 // import Graph from 'vis-react';
 import React from 'react';
+// import { Graph } from 'react-d3-graph';
+import TestData from './test';
 
 const options = {
     height: "100%",
@@ -79,31 +81,37 @@ class FilmGraph extends React.Component {
         }
         this.state = {
             url: url,
-            graph: {nodes: [], edges: []}
+            graph: {nodes: [], links: []}
         }
     }
 
     componentDidMount() {
-        // try {
-        //     console.log(this.state.url)
-        //     fetch(this.state.url)
-        //         .then(response => {
-        //             if (response.ok) {
-        //                 return response.json()
-        //             } else {
-        //                 throw new Error ('Backend query failed')
-        //             }
-        //         })
-        //         .then(json => this.setState({graph: json}));
-        // } catch(error) {
-        //     console.log(error)
-        // }
+        try {
+            console.log(this.state.url)
+            fetch(this.state.url)
+                .then(response => {
+                    if (response.ok) {
+                        return response.json()
+                    } else {
+                        throw new Error ('Backend query failed')
+                    }
+                })
+                .then(json => this.setState({graph: {nodes: json.nodes, links: json.edges}}));
+        } catch(error) {
+            console.log(error)
+        }
     }
 
     render() {
         console.log(this.state.graph)
         try {
-            // return(<Graph/>)
+            return(
+                // // d3-react-graph
+                // <Graph id='filmgraph'
+                //     data={TestData}
+                //     config={config}
+                // />
+            )
         }
         catch(error) {
             console.log(error)
