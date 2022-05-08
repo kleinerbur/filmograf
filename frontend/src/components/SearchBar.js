@@ -1,6 +1,6 @@
 import TextField from '@mui/material/TextField';
-import { styled } from '@mui/material/styles';
 import React from 'react';
+import './Form.css';
 
 const defaultStyle = {
     minWidth: 400,
@@ -19,8 +19,6 @@ const defaultStyle = {
         color: 'white'
     }
 }
-
-const API_URL = 'http://127.0.0.1:8000/api/'
 
 
 class SearchBar extends React.Component {
@@ -52,9 +50,13 @@ class SearchBar extends React.Component {
         })
     }
 
+    hide   = () => this.setState({hidden: true})
+    unhide = () => this.setState({hidden: false})
+
     render() {
         if (this.state.hidden) return (<></>)
         return (<TextField
+                    className='.fgrafSearchBar'
                     id={this.state.name}
                     name={this.state.name}
                     label={this.state.label}

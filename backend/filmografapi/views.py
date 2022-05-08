@@ -1,4 +1,3 @@
-import re
 from django.http import JsonResponse
 from neomodel import db
 
@@ -92,7 +91,7 @@ def getPath(request):
                     RETURN right LIMIT 1
                 }}
                 MATCH path=shortestPath((left)-[*]-(right))
-                RETURN [node in nodes(path)| {{id: node.imdb_id, image: node.image, uri:node.imdb_uri, label: COALESCE(node.name, "") + COALESCE(node.title, "")}}] as nodes
+                RETURN [node in nodes(path)| {{group: node.group, image: node.image, id: toInteger(node.imdb_id), uri: node.imdb_uri, label: COALESCE(node.name, "") + COALESCE(node.title, "")}}] as nodes
                 '''
             )[0][0][0]
             edges = db.cypher_query(
@@ -108,10 +107,10 @@ def getPath(request):
                     RETURN right LIMIT 1
                 }}
                 MATCH path=shortestPath((left)-[*]-(right))
-                RETURN [r in relationships(path)| {{from: startNode(r).imdb_id, to: endNode(r).imdb_id}}] as edges
+                RETURN [r in relationships(path)| {{from: toInteger(startNode(r).imdb_id), to: toInteger(endNode(r).imdb_id), id: id(r), label: r.role}}] as edges
                 '''
             )[0][0][0]
-            return JsonResponse({"path": {"nodes": nodes, "edges": edges}}, safe=False)
+            return JsonResponse({"graph": {"nodes": nodes, "edges": edges}}, safe=False)
         except IndexError:
             return JsonResponse({})
         except Exception as e:
@@ -149,7 +148,7 @@ def getGraph(request):
                 YIELD path
                 UNWIND relationships(path) AS relationships
                 WITH distinct relationships AS r
-                RETURN {{from: toInteger(startNode(r).imdb_id), to: toInteger(endNode(r).imdb_id), id: id(r)}}
+                RETURN {{from: toInteger(startNode(r).imdb_id), to: toInteger(endNode(r).imdb_id), id: id(r), label: r.role}}
                 '''
             )[0]
             edges = [row[0] for row in edges]

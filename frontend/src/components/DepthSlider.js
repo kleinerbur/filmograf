@@ -80,9 +80,14 @@ class DepthSlider extends React.Component {
         }
     }
 
+    hide   = () => this.setState({hidden: true})
+    unhide = () => this.setState({hidden: false})
+    
     render() {
         if (this.state.hidden) return (<></>)
         return (<Slider
+                    aria-valuetext='mélység'
+                    hidden={this.state.hidden}
                     name={this.state.name}
                     id={this.state.name}
                     sx={defaultSx}

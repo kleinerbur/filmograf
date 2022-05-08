@@ -6,8 +6,7 @@ from imdb import Cinemagoer
 from neo4j import GraphDatabase
 from neo4j.exceptions import ConstraintError
 from os import path
-from typing import List, Set
-from sqlalchemy import false
+from typing import Set
 from tqdm import tqdm
 
 NEO4J_USERNAME = 'guest'
@@ -42,64 +41,69 @@ class Film:
     image: str
     cast: Set[str]
 
-    def __init__(self, id:str, fromJSON:bool=False, title:str=None, cast:Set[str]=None, image:str=None) -> None:
+    def __init__(self, id:str, fromJSON:bool=False, title:str=None, cast:Set[tuple]=None, image:str=None, poster:str=None) -> None:
         if fromJSON:
             self.id = id
             self.title = title
             self.cast = cast
             self.image = image
+            self.poster = poster
             return
         film = Cinemagoer().get_movie(id)
         self.id    = id
         self.title = film['title']
-        self.image = film['cover url'].split("_V1")[0]
-        self.cast  = [actor.getID() for actor in film['cast'][:CAST_LIMIT]]
-
+        self.image = film['cover url']
+        self.poster = film['full-size cover url']
+        self.cast = set()
+        for actor in film['cast'][:CAST_LIMIT]:
+            try:
+                rolename = actor.currentRole['name']
+            except: # actor has multiple credited roles
+                try:
+                    rolename = actor.currentRole[0]['name']
+                except: # actor's role has no name
+                    rolename = ''
+            self.cast.add((actor.getID(), rolename))
+        
     def toJSON(self) -> str:
         '''Converts the Film object into a JSON formatted string.'''
         return json.dumps(self, cls=SetEncoder, sort_keys=True, indent=4)
 
     def fromJSON(json_dict) -> None:
         '''Creates a new Film object from data from a JSON dictionary.'''
-        return Film(fromJSON=True, id=json_dict['id'], title=json_dict['title'], cast=json_dict['cast'], image=json_dict['image'])
+        return Film(fromJSON=True, id=json_dict['id'], title=json_dict['title'], cast=json_dict['cast'], image=json_dict['image'], poster=json_dict['poster'])
 
 
 class Actor:
     id: str
     name: str
     image: str
-    filmography: Set[str]
     
-    def __init__(self, id:str, films:Set[Film]=set(), fromJSON:bool=False, name:str=None, filmography:Set[str]=None, image=None) -> None:
+    def __init__(self, id:str, films:Set[Film]=set(), fromJSON:bool=False, name:str=None, image:str=None, poster:str=None) -> None:
         if fromJSON:
             self.id = id
             self.name = name
-            self.filmography = set(filmography)
             self.image = image
+            self.poster = poster
             return
         person = Cinemagoer().get_person(id)
         self.id   = id
         self.name = person['name']
 
         try:
-            self.image = person['headshot'].split("_V1")[0]
+            self.image = person['headshot']
+            self.poster = person['full-size headshot']
         except Exception:
-            self.image = "https://t4.ftcdn.net/jpg/00/64/67/63/360_F_64676383_LdbmhiNM6Ypzb3FM4PPuFP9rHe7ri8Ju.jpg"
+            self.image = "https://cdn-icons-png.flaticon.com/128/1077/1077114.png"
+            self.poster = "https://t4.ftcdn.net/jpg/00/64/67/63/360_F_64676383_LdbmhiNM6Ypzb3FM4PPuFP9rHe7ri8Ju.jpg"
         
-        filmography = []
-        if 'actor'   in person['filmography']: filmography += person['filmography']['actor']
-        if 'actress' in person['filmography']: filmography += person['filmography']['actress']
-        if 'self'    in person['filmography']: filmography += person['filmography']['self']
-        filmography = [film.getID() for film in filmography]
-        self.filmography = set(filmography) & set([film.id for film in films])
-
     def toJSON(self) -> str:
         '''Converts the Film object into a JSON formatted string.'''
         return json.dumps(self, cls=SetEncoder, sort_keys=True, indent=4)
 
     def fromJSON(json_dict) -> None:
         '''Creates a new Actor object from data from a JSON dictionary.'''
-        return Actor(fromJSON=True, id=json_dict['id'], name=json_dict['name'], filmography=json_dict['filmography'], image=json_dict['image'])
+        return Actor(fromJSON=True, id=json_dict['id'], name=json_dict['name'], image=json_dict['image'])
 
 
 class Neo4jConnection:
@@ -159,20 +163,15 @@ class DatabaseBuilder:
                 executor.submit(self.pull_film_data, film.getID())
         if VERBOSE: self.progressbar.clear()
 
-        merged_casts = set([id for film in self.films for id in film.cast])
+        log.info(len(self.films))
+
+        merged_casts = set([id for film in self.films for (id, role) in film.cast])
         log.info(f'Pulling actor data for {len(merged_casts)} actors')
         if VERBOSE: self.progressbar = tqdm(total=len(merged_casts), position=0, leave=False)
         with concurrent.futures.ThreadPoolExecutor() as executor:
             for id in merged_casts:
                 executor.submit(self.pull_actor_data, id)
         if VERBOSE: self.progressbar.clear()
-
-        # Some actors are credited for a role on a film's page, but not on the actor's page.
-        # This leads to their filmography being empty and them being isolated nodes in the database.
-        # To avoid this, these actors are weeded out before the database is populated.
-        for actor in [actor for actor in self.actors if len(actor.filmography) == 0]:
-            log.info(f'Removing {actor.name} (isolated node)')
-            self.actors.remove(actor)
 
         log.info('Saving JSON snapshot')
         with open('snapshot.json', 'w') as jsonfile:
@@ -193,13 +192,7 @@ class DatabaseBuilder:
 
     def populate_database(self) -> None:
         self.n4j = Neo4jConnection(NEO4J_URI, NEO4J_USERNAME, NEO4J_PASSWORD)
-        log.info('Adding films to neo4j database')
-        if VERBOSE: self.progressbar = tqdm(total=len(self.films), position=0, leave=False)
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            for film in self.films:
-                executor.submit(self.add_film_to_database, film)
-        if VERBOSE: self.progressbar.clear()
-        
+
         log.info('Adding actors to neo4j database')
         if VERBOSE: self.progressbar = tqdm(total=len(self.actors), position=0, leave=False)
         with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -207,21 +200,33 @@ class DatabaseBuilder:
                 executor.submit(self.add_actor_to_database, actor)
         if VERBOSE: self.progressbar.clear()
 
+        log.info('Adding films to neo4j database')
+        if VERBOSE: self.progressbar = tqdm(total=len(self.films), position=0, leave=False)
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            for film in self.films:
+                executor.submit(self.add_film_to_database, film)
+        if VERBOSE: self.progressbar.clear()
 
-    def add_film_to_database(self, film:Film) -> None:
-        try:
-            self.n4j.query(f'CREATE (f:Film {{group:"films", imdb_id:"{film.id}", title:"{film.title}", image:"{film.image}", imdb_uri:"https://www.imdb.com/title/tt{film.id}"}})')
-        except ConstraintError:
-            log.error(f'Film with ID {film.id} ("{film.title}") already exists, skipping')
-        if VERBOSE: self.progressbar.update()
+        log.info('Removing isolated nodes')
+        self.n4j.query(f'MATCH (n) WHERE NOT (n)--() DETACH DELETE n')
+        log.info('Done')
+
 
     def add_actor_to_database(self, actor:Actor) -> None:
         try:
-            self.n4j.query(f'CREATE (a:Actor {{group:"actors", imdb_id:"{actor.id}", name:"{actor.name}", image:"{actor.image}", imdb_uri:"https://www.imdb.com/name/nm{actor.id}"}})')
-            for film_id in actor.filmography:
-                self.n4j.query(f'MATCH (actor:Actor {{imdb_id:"{actor.id}"}}), (film:Film {{imdb_id:"{film_id}"}}) MERGE (actor)-[:STARRED_IN]->(film)')
+            self.n4j.query(f'CREATE (a:Actor {{group:"actors", imdb_id:"{actor.id}", name:"{actor.name}", image:"{actor.image}", poster:"{actor.poster}", imdb_uri:"https://www.imdb.com/name/nm{actor.id}"}})')
         except ConstraintError:
             log.error(f'Actor with ID {actor.id} ({actor.name}) already exists, skipping')
+        if VERBOSE: self.progressbar.update()
+
+
+    def add_film_to_database(self, film:Film) -> None:
+        try:
+            self.n4j.query(f'CREATE (f:Film {{group:"films", imdb_id:"{film.id}", title:"{film.title}", image:"{film.image}", poster:"{film.poster}", imdb_uri:"https://www.imdb.com/title/tt{film.id}"}})')
+            for (actor_id, role) in film.cast:
+                self.n4j.query(f'MATCH (actor:Actor {{imdb_id:"{actor_id}"}}), (film:Film {{imdb_id:"{film.id}"}}) MERGE (actor)-[:STARRED_IN {{role: "{role}"}}]->(film)')
+        except ConstraintError:
+            log.error(f'Film with ID {film.id} ("{film.title}") already exists, skipping')
         if VERBOSE: self.progressbar.update()
 
 
@@ -328,7 +333,6 @@ class DatabaseInterface:
             RETURN path''')[0].data())
             
     def get_graph(self, root:str, depth:int) -> str:
-        
         assert self.node_exists(root), f'No node in the database matches the given keyword: {root}'
         # Odd distances are films, even distances are costars,
         # so depth has to be doubled
@@ -339,6 +343,9 @@ class DatabaseInterface:
             YIELD path
             RETURN path
         ''')]) # the graph is returned as a list of paths
+
+    def cypher(self, query:str) -> str:
+        return [result.data() for result in self.n4j.query(query)]
 
 
 class Parser:
@@ -361,6 +368,7 @@ class Parser:
         self.parser.add_argument('-g', '--graph', nargs=2, metavar=('<name|IMDb ID|IMDb URL> <depth>'), help='Returns a graph from the given root node up to the given depth')
         self.parser.add_argument('-e', '--exists', metavar='<name|title|IMDb ID|IMDb URL>', help='Checks if a node with the given property exists in the database.')
         self.parser.add_argument('--force', action='store_true', help='Force pulling of new data even if a JSON snapshot is present.')
+        self.parser.add_argument('--cypher', metavar='<query>', help='Run a cypher query on the Neo4j database.')
         self.args = self.parser.parse_args()
 
         # set global variables
@@ -375,6 +383,7 @@ class Parser:
         if self.args.path:           self.__handle_path()
         if self.args.graph:          self.__handle_graph()
         if self.args.exists:         self.__handle_exists()
+        if self.args.cypher:         self.__handle_cypher()
 
     def __handle_verbose(self):
         global VERBOSE
@@ -426,5 +435,7 @@ class Parser:
         param = self.args.exists
         print(DatabaseInterface().node_exists(param))
 
+    def __handle_cypher(self):
+        print(DatabaseInterface().cypher(self.args.cypher))
 
 Parser()

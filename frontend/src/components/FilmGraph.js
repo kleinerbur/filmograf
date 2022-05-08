@@ -1,25 +1,42 @@
-// import Graph from 'vis-react';
+import Graph from 'vis-react';
 import React from 'react';
-// import { Graph } from 'react-d3-graph';
-import TestData from './test';
+import Network from 'vis-react';
 
 const options = {
-    height: "100%",
-    width: "100%",
-    improvedLayout: false,
     layout: {
+        improvedLayout: true,
         hierarchical: false,
     },
+    nodes: {
+        fixed: false
+    },
     edges: {
-        width: 3,
-        color: "#fff",
-        arrowStrikethrough: false,
+        width: 2,
+        color: {
+            color: "#555",
+            hover: "#333",
+            highlight: "#111",
+            opacity: 0.4
+        },
+        font: {
+            face: 'Bahnschrift',
+            background: 'white',
+            strokeWidth: 0,
+            size: 8,
+            color: '#444',
+            align: 'middle'
+        },
+        arrows: {
+            to: {
+                enabled: false
+            }
+        }
     },
     physics: {
-        enabled: false,
-        solver: "repulsion",
-        repulsion: {
-            nodeDistance: 600,
+        enabled: true,
+        barnesHut: {
+            springConstant: 0,
+            avoidOverlap: 10
         },
         stabilization: {
             enabled: true,
@@ -29,66 +46,51 @@ const options = {
             fit: true
         }
     },
-    nodes: {
-        fixed: false
-    },
     groups: {
         films: {
-            size: 110,
+            size: 60,
             shape: "image",
-            font: {
-                size: 0
-            }
+            font: {size: 20}
         },
         actors: {
-            size: 75,
+            size: 30,
+            borderWidth: 0,
             shape: "circularImage",
-            borderWidth: 5,
-            color: "white",
-            font: {
-                face: "Bahnschrift",
-                color: "black",
-                background: "white",
-                size: 20,
-                vadjust: -20
+            color: {
+                background: "#4da570",
+                hover: "#1f4637",
+                highlight: "#367654"
             },
-            selected: {
-                font: {
-                    face: "arial"
-                }
+            font: {
+                size: 20,
+                face: "Bahnschrift",
+                color: "#1f4637",
+                strokeWidth: 3
             }
         }
     },
     interaction: {
         hoverEdges: false,
-        hover: true,
+        hover: true
     }
 }
 
 class FilmGraph extends React.Component {
     constructor(props) {
         super(props)
-        var url = 'http://127.0.0.1:8000/api/';
-        switch(props.mode) {
-            case 'graph':
-                url = url + 'graph?root=' + props.root.replace(' ', '%20') + '&depth=' + props.depth;
-                break;
-            case 'path': 
-                url = url + 'path?left=' + props.left.replace(' ', '%20') + '&right=' + props.right.replace(' ', '%20');
-                break;
-            default:
-                break;
-        }
         this.state = {
-            url: url,
-            graph: {nodes: [], links: []}
+            width: props.width.toString(),
+            height: "830",
+            uri: props.uri,
+            nodes: [],
+            edges: []
         }
     }
 
     componentDidMount() {
         try {
-            console.log(this.state.url)
-            fetch(this.state.url)
+            console.log(this.state.uri)
+            fetch(this.state.uri)
                 .then(response => {
                     if (response.ok) {
                         return response.json()
@@ -96,27 +98,38 @@ class FilmGraph extends React.Component {
                         throw new Error ('Backend query failed')
                     }
                 })
-                .then(json => this.setState({graph: {nodes: json.nodes, links: json.edges}}));
+                .then(json => this.setState({
+                    nodes: json.graph.nodes,
+                    edges: json.graph.edges
+                }));
         } catch(error) {
             console.log(error)
         }
     }
 
     render() {
-        console.log(this.state.graph)
+        const key = Math.random()
+        var _network = React.createRef()
         try {
             return(
-                // // d3-react-graph
-                // <Graph id='filmgraph'
-                //     data={TestData}
-                //     config={config}
-                // />
+                <Graph
+                    ref={_network}
+                    key={key}
+                    graph={{
+                        nodes: this.state.nodes.map(n => Object.assign(n, {network: key})),
+                        edges: this.state.edges.map(e => Object.assign(e, {network: key})),
+                    }}
+                    options={{
+                        ...options,
+                        width: this.state.width,
+                        height: this.state.height
+                    }}
+                />
             )
         }
         catch(error) {
             console.log(error)
         }
-            // return(<Graph data={this.state.graph} options={options} events={{}}/>)
         return (<></>)
     }
 }

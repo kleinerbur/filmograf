@@ -1,6 +1,7 @@
 import { Button } from '@mui/material';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import React from 'react';
+// import './Form.css';
 
 // base: 52af77
 // bg: 4da570
@@ -12,9 +13,9 @@ const selectedSx = {
     backgroundColor: '#63b784',
     color: 'white',
     fontSize: 15,
-    border: '0px solid red',
+    border: '0px solid white',
     ':hover': {
-        border: '0px solid red',
+        border: '0px solid white',
         backgroundColor: 'white',
         color: '#1f4637',
     },
@@ -29,9 +30,9 @@ const unselectedSx = {
     backgroundColor: '#4da570',
     color: '#1f4637',
     fontSize: 15,
-    border: '0px solid red',
+    border: '0px solid white',
     ':hover': {
-        border: '0px solid red',
+        border: '0px solid white',
         backgroundColor: 'white',
         color: '#1f4637'
     },
@@ -50,17 +51,25 @@ class Menu extends React.Component {
         this._graphButton = React.createRef()
     }
 
-    setMode(modeGraph) {
-        this.setState({
-            modeGraph: modeGraph,
-            pathButtonSx: modeGraph ? unselectedSx : selectedSx,
-            graphButtonSx: modeGraph ? selectedSx : unselectedSx  
+    graphMode = () => this.setState({
+            modeGraph: true,
+            pathButtonSx: unselectedSx,
+            graphButtonSx: selectedSx  
         })
-    }
+    
+    pathMode = () => this.setState({
+        modeGraph: false,
+        pathButtonSx: selectedSx,
+        graphButtonSx: unselectedSx  
+    })
 
     render() {
         return (
-            <ButtonGroup variant='outlined' orientation='vertical' sx={{border: '2px solid #4da570'}}>
+            <ButtonGroup 
+                className='modeButtons'
+                variant='outlined'
+                orientation='vertical'
+                sx={{border: '2px solid #4da570'}}>
                 <Button
                     ref={this._pathButton}
                     id='pathButton'
