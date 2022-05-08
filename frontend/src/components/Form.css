@@ -43,3 +43,9 @@
     left: 4em;
     right: 4em;
 }
+
+canvas {
+    width:max-content;
+    height: max-content;
+    overflow: hidden;
+}

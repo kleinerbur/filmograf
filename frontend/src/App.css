@@ -70,9 +70,3 @@
 .imdb-button:active {
   box-shadow: 0 0 50px blue;
 }
-
-#canvas-container {
-  width:max-content;
-  height: max-content;
-  overflow: hidden;
-}

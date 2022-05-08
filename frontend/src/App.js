@@ -24,7 +24,7 @@ class App extends React.Component {
 	handleSubmit = (event) => {
 		this._form.current.setDistance()
 
-		const canvas = document.getElementById('canvas-container')
+		const canvas = document.getElementById('canvas')
 		const canvasWidth  = canvas.clientWidth;
 		const canvasHeight = canvas.clientHeight;
 

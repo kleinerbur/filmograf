@@ -118,13 +118,6 @@ class FilmGraph extends React.Component {
         }
     }
 
-    handleNodeDoubleClick = (event) => {
-        var id = this._network.current.Network.getSelectedNodes()[0]
-        var selectedNode = this.state.nodes.filter(n => n.id === id)[0]
-        // window.open(selectedNode.uri)
-
-    }
-
     render() {
         const key = Math.random()
         try {
