@@ -1,6 +1,6 @@
 import Graph from 'vis-react';
 import React from 'react';
-import Network from 'vis-react';
+
 
 const options = {
     layout: {
@@ -13,9 +13,9 @@ const options = {
     edges: {
         width: 2,
         color: {
-            color: "#555",
-            hover: "#333",
-            highlight: "#111",
+            color: "rgba(0,0,0,0.4)",
+            hover: "rgba(0,0,0,0.6)",
+            highlight: "rgba(0,0,0,0.8)",
             opacity: 0.4
         },
         font: {
@@ -50,7 +50,11 @@ const options = {
         films: {
             size: 60,
             shape: "image",
-            font: {size: 20}
+            font: {
+                size: 30,
+                face: 'Bahnschrift',
+                strokeWidth: 6
+            }
         },
         actors: {
             size: 30,
@@ -65,7 +69,8 @@ const options = {
                 size: 20,
                 face: "Bahnschrift",
                 color: "#1f4637",
-                strokeWidth: 3
+                strokeWidth: 3,
+                vadjust: '-20'
             }
         }
     },
@@ -78,12 +83,18 @@ const options = {
 class FilmGraph extends React.Component {
     constructor(props) {
         super(props)
+        this._network = React.createRef()
         this.state = {
             width: props.width.toString(),
             height: "830",
             uri: props.uri,
             nodes: [],
-            edges: []
+            edges: [],
+            events: props.events,
+
+            image_src: '',
+            imdb_uri: '',
+            openDrawer: false
         }
     }
 
@@ -107,13 +118,20 @@ class FilmGraph extends React.Component {
         }
     }
 
+    handleNodeDoubleClick = (event) => {
+        var id = this._network.current.Network.getSelectedNodes()[0]
+        var selectedNode = this.state.nodes.filter(n => n.id === id)[0]
+        // window.open(selectedNode.uri)
+
+    }
+
     render() {
         const key = Math.random()
-        var _network = React.createRef()
         try {
             return(
+            <>
                 <Graph
-                    ref={_network}
+                    ref={this._network}
                     key={key}
                     graph={{
                         nodes: this.state.nodes.map(n => Object.assign(n, {network: key})),
@@ -124,7 +142,9 @@ class FilmGraph extends React.Component {
                         width: this.state.width,
                         height: this.state.height
                     }}
+                    events={this.state.events}
                 />
+            </>
             )
         }
         catch(error) {

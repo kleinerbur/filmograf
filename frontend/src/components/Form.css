@@ -5,6 +5,8 @@
     margin-bottom: auto;
     /* border: 2px solid red; */
     width: 100%;
+    position: relative;
+    
 }
 
 .MuiButtonGroup-root {
@@ -18,8 +20,8 @@
     float: left;
     top: 1.9em;
     bottom: 0;
-    right: 1em;
-    left: 1em;
+    right: 20px;
+    left: 20px;
 }
 
 .MuiSlider-root {
@@ -40,8 +42,4 @@
     bottom: 0;
     left: 4em;
     right: 4em;
-}
-
-canvas {
-    overflow: hidden;
 }

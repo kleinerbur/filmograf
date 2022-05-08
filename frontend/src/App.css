@@ -36,3 +36,43 @@
     transform: rotate(90deg);
   }
 }
+
+.poster {
+  display: block;
+  margin: auto;
+}
+
+.posterlabel {
+  font-family: 'Bahnschrift';
+  color: white;
+  margin: auto;
+  margin-top: -160px;
+  position: relative;
+  text-shadow: 0 0 10px black;
+}
+
+.imdb-button {
+  width: 100px;
+  display: block;
+  margin: auto;
+  margin-top: -100px;
+  border: 3px solid white;
+  border-radius: 15px;
+  cursor: pointer;
+}
+
+.imdb-button:hover {
+  /* border: 5px solid red; */
+  box-shadow: 0 0 50px white;
+  transition: 0.1s ease-in-out;
+}
+
+.imdb-button:active {
+  box-shadow: 0 0 50px blue;
+}
+
+#canvas-container {
+  width:max-content;
+  height: max-content;
+  overflow: hidden;
+}

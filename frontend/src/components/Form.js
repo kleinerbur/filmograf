@@ -13,6 +13,7 @@ const defaultValues = {
     right: "",
     root: "",
     depth: 0,
+    distance: ''
 }
 
 class Form extends React.Component {
@@ -93,10 +94,30 @@ class Form extends React.Component {
         }
     }
 
+    setDistance() {
+        if (!this.state.modeGraph) {
+            try {
+                fetch(API_URI + 'distance?left=' + this.state.left + '&right=' + this.state.right)
+                    .then(response => response.json())
+                    .then(response => this.setState({
+                        distance: 'Távolság: ' + response.distance
+                    })
+                )
+                console.log(this.state.distance)
+            } catch (Exception) {
+                console.long('ajaj')
+            }
+        } else {
+            this.setState({
+                distance: ''
+            })
+        }
+    }
+
     render() {
         return(
             <ul id='form' className="searchMenu">
-                <h2 style={{fontFamily: "Bahnschrift", fontWeight: "lighter"}}>film-o-gráf</h2>
+                <h2 style={{fontFamily: "Bahnschrift", fontWeight: "lighter", marginRight: 100, marginLeft: 50}}>film-o-gráf</h2>
                 <Menu className="modeButtons"
                     ref={this._menu}
                     modeGraph={this.state.modeGraph}
@@ -130,6 +151,7 @@ class Form extends React.Component {
                     onClick={this.state.onSubmit}
                     disabled={this.state.left === ''}
                 />
+                <h3 style={{fontFamily: "Bahnschrift", fontWeight: "lighter", margin: 'auto', marginLeft: 200}}>{this.state.distance}</h3>
             </ul>
         )
     }

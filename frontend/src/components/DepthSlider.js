@@ -1,5 +1,4 @@
 import Slider from '@mui/material/Slider';
-import { styled } from '@mui/material/styles';
 import React from 'react';
 
 const defaultSx = {

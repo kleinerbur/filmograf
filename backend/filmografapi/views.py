@@ -5,7 +5,7 @@ def compare_against_node(alias:str, keyword:str) -> str:
         return f'''toUpper({alias}.name)    =~ toUpper(".*{".*".join(keyword.split())}.*") OR 
                    toUpper({alias}.imdb_id) =~ toUpper(".*{".*".join(keyword.split())}.*") OR
                    toUpper({alias}.title)   =~ toUpper(".*{".*".join(keyword.split())}.*")'''
-
+                   
 def nodeExists(request):
     if request.method == 'GET':
         keyword = request.GET.get("search", "")
@@ -66,7 +66,7 @@ def getDistance(request):
                 RETURN length(path)
                 '''
             )[0][0][0]
-            return JsonResponse({"distance": distance}, safe=False)
+            return JsonResponse({"distance": distance/2}, safe=False)
         except IndexError:
             return JsonResponse({"distance": "-"}, safe=False)
         except Exception as e:
@@ -91,7 +91,7 @@ def getPath(request):
                     RETURN right LIMIT 1
                 }}
                 MATCH path=shortestPath((left)-[*]-(right))
-                RETURN [node in nodes(path)| {{group: node.group, image: node.image, id: toInteger(node.imdb_id), uri: node.imdb_uri, label: COALESCE(node.name, "") + COALESCE(node.title, "")}}] as nodes
+                RETURN [node in nodes(path)| {{group: node.group, image: node.image, poster: node.poster, id: toInteger(node.imdb_id), uri: node.imdb_uri, label: COALESCE(node.name, "") + COALESCE(node.title, "")}}] as nodes
                 '''
             )[0][0][0]
             edges = db.cypher_query(
@@ -133,7 +133,7 @@ def getGraph(request):
                 YIELD path
                 UNWIND nodes(path) AS nodes
                 WITH distinct nodes AS node
-                RETURN {{group: node.group, image: node.image, id: toInteger(node.imdb_id), uri: node.imdb_uri, label: COALESCE(node.name, "") + COALESCE(node.title, "")}}
+                RETURN {{group: node.group, image: node.image, poster: node.poster, id: toInteger(node.imdb_id), uri: node.imdb_uri, label: COALESCE(node.name, "") + COALESCE(node.title, "")}}
                 '''
             )[0]
             nodes = [row[0] for row in nodes]
