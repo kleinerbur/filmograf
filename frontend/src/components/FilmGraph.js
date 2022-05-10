@@ -90,11 +90,7 @@ class FilmGraph extends React.Component {
             uri: props.uri,
             nodes: [],
             edges: [],
-            events: props.events,
-
-            image_src: '',
-            imdb_uri: '',
-            openDrawer: false
+            events: props.events
         }
     }
 

@@ -1,6 +1,8 @@
 from django.http import JsonResponse
 from neomodel import db
 
+import logging
+
 def compare_against_node(alias:str, keyword:str) -> str:
         return f'''toUpper({alias}.name)    =~ toUpper(".*{".*".join(keyword.split())}.*") OR 
                    toUpper({alias}.imdb_id) =~ toUpper(".*{".*".join(keyword.split())}.*") OR
@@ -35,7 +37,7 @@ def getNode(request):
                     WHERE {compare_against_node('node', keyword)}
                     RETURN node LIMIT 1
                 }}
-                RETURN {{imdb_id: node.imdb_id, imdb_uri: node.imdb_uri, name: node.name, title: node.title}}
+                RETURN {{group: node.group, image: node.image, poster: node.poster, id: toInteger(node.imdb_id), uri: node.imdb_uri, label: COALESCE(node.name, "") + COALESCE(node.title, "")}}
                 '''
             )[0][0][0]
             return JsonResponse(node, safe=False)
@@ -45,11 +47,32 @@ def getNode(request):
             return JsonResponse({"error": f"{e}"}, safe=False)
 
 
+def getNode(keyword):
+    try:
+        node = db.cypher_query(
+            f'''
+            CALL {{
+                MATCH (node)
+                WHERE {compare_against_node('node', keyword)}
+                RETURN node LIMIT 1
+            }}
+            RETURN {{group: node.group, image: node.image, poster: node.poster, id: toInteger(node.imdb_id), uri: node.imdb_uri, label: COALESCE(node.name, "") + COALESCE(node.title, "")}}
+            '''
+        )[0][0][0]
+        logging.error(node)
+        return node
+    except IndexError:
+        return None
+    except Exception as e:
+        return None #TODO fix this
+
 def getDistance(request):
     if request.method == 'GET':
         left  = request.GET.get("left", "")
         right = request.GET.get("right", "")
         try:
+            if getNode(left) == getNode(right):
+                return JsonResponse({"distance": 0})
             distance = db.cypher_query(
                 f'''
                 CALL {{
@@ -78,6 +101,8 @@ def getPath(request):
         left  = request.GET.get("left", "")
         right = request.GET.get("right", "")
         try:
+            if getNode(left) == getNode(right):
+                return JsonResponse({"graph": {"nodes": [getNode(left)], "edges": []}})
             nodes = db.cypher_query(
                 f'''
                 CALL {{
