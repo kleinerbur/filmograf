@@ -71,11 +71,11 @@ class DepthSlider extends React.Component {
     constructor(props){
         super(props)
         this.state = {
-            max: props.max,
-            value: props.value,
+            max:      props.max,
+            value:    props.value,
             onChange: props.onChange,
-            hidden: props.hidden,
-            name: props.name
+            hidden:   props.hidden,
+            name:     props.name
         }
     }
 
@@ -85,7 +85,6 @@ class DepthSlider extends React.Component {
     render() {
         if (this.state.hidden) return (<></>)
         return (<Slider
-                    aria-valuetext='mélység'
                     hidden={this.state.hidden}
                     name={this.state.name}
                     id={this.state.name}

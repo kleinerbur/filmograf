@@ -38,37 +38,28 @@ class Form extends React.Component {
         if (id === 'depth')  return this._slider
     }
 
-    handleTextfieldChange = (event) => {
+    handleSearchBarChange = (event) => {
         this._submit.current.disable()
         const {name, value} = event.target;
-        if (value !== '') {
-            try {
-                fetch(API_URI + 'exists?search=' + value)
-                    .then(response => {
-                        if (response.ok) {
-                            return response.json()
-                        } else {
-                            throw new Error ('Backend query failed')
-                        }
-                    })
-                    .then(json => {
-                        if (json.nodeExists) {
-                            this.getRef(event.target.id).current.clearError()
-                            this.setState({[name]: value})
-                            this._submit.current.enable()
-                        } else {
-                            this.getRef(event.target.id).current.error('Nincs ilyen színész / film az adatbázisban!')
-                            this.setState({[name]: ''})
-                            this._submit.current.disable()
-                        }
-                    })
-            } catch(error) {
-                this.getRef(event.target.id).current.error('Az adatbázis pillanatnyilag nem elérhető.')
-            }
-        } else {
+        if (value === '') {
             this.setState({[name]: ''})
             this._submit.current.disable()
+            return
         }
+        var searchbar = this.getRef(event.target.id).current
+        fetch(API_URI + 'exists?search=' + value)
+            .then(response => response.json())
+            .then(json => {
+                if (json.nodeExists) {
+                    searchbar.clearError()
+                    this.setState({[name]: value})
+                    this._submit.current.enable()
+                } else {
+                    searchbar.error('Nincs ilyen színész / film az adatbázisban!')
+                    this.setState({[name]: ''})
+                    this._submit.current.disable()
+                }})
+            .catch((error) => searchbar.error('Az adatbázis pillanatnyilag nem elérhető.'))
     }
 
     handleSliderChange = (event) => this.setState({depth: event.target.value})
@@ -87,30 +78,19 @@ class Form extends React.Component {
     }
 
     getURI() {
-        if (this.state.modeGraph) {
-                return(API_URI + 'graph?root=' + this.state.left + '&depth=' + this.state.depth)
-        } else {
-                return(API_URI + 'path?left=' + this.state.left + '&right=' + this.state.right)
-        }
+        if (this.state.modeGraph)
+            return(API_URI + 'graph?root=' + this.state.left + '&depth=' + this.state.depth)
+        return(API_URI + 'path?left=' + this.state.left + '&right=' + this.state.right)
     }
 
     setDistance() {
         if (!this.state.modeGraph) {
-            try {
                 fetch(API_URI + 'distance?left=' + this.state.left + '&right=' + this.state.right)
                     .then(response => response.json())
-                    .then(response => this.setState({
-                        distance: 'Távolság: ' + response.distance
-                    })
-                )
-                console.log(this.state.distance)
-            } catch (Exception) {
-                console.long('ajaj')
-            }
+                    .then(response => this.setState({distance: 'Távolság: ' + response.distance}))
+                    .catch((error) => this.setState({distance: 'Távolság: ?'}))
         } else {
-            this.setState({
-                distance: ''
-            })
+            this.setState({distance: ''})
         }
     }
 
@@ -128,21 +108,21 @@ class Form extends React.Component {
                     name="left"
                     label="Színész / film"
                     value={this.state.name}
-                    onChange={this.handleTextfieldChange}
+                    onChange={this.handleSearchBarChange}
                 />
                 <SearchBar
                     ref={this._right}
                     name="right"
                     label="Színész / film"
                     value={this.state.name}
-                    onChange={this.handleTextfieldChange}    
+                    onChange={this.handleSearchBarChange}    
                     hidden={this.state.modeGraph}
                 />
                 <DepthSlider
                     ref={this._slider}
                     name='depth'
                     value={this.state.depth}
-                    max={4}
+                    max={3}
                     onChange={this.handleSliderChange}
                     hidden={!this.state.modeGraph}
                 />

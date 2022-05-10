@@ -34,7 +34,7 @@ class SubmitButton extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-            onClick: props.onClick,
+            onClick:  props.onClick,
             disabled: props.disabled
         }
     }
@@ -50,8 +50,7 @@ class SubmitButton extends React.Component {
                     sx={defaultSx}>
                         <DoubleArrowSharpIcon/>
                         MEHET
-                </IconButton>
-        )
+                </IconButton>)
     }
 }
 

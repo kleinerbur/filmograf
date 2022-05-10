@@ -16,12 +16,12 @@ class App extends React.Component {
 		this._form  = React.createRef()
 		this._graph = React.createRef()
 		this.state = {
-			openLeftDrawer: false,
+			openLeftDrawer:  false,
 			openRightDrawer: false,
-			poster_src: '',
-			poster_label: '',
-			poster_alt: '',
-			imdb_uri: ''
+			poster_src:      '',
+			poster_label:    '',
+			poster_alt:      '',
+			imdb_uri:        ''
 		}
 	}
 
@@ -33,33 +33,42 @@ class App extends React.Component {
 		const canvasHeight = canvas.clientHeight;
 
 		const canvasRoot = ReactDOM.createRoot(canvas)
-		canvasRoot.render(<FilmGraph ref={this._graph} width={canvasWidth} height={canvasHeight} uri={this._form.current.getURI()} events={{doubleClick: this.openLeftDrawer}}/>)
+		canvasRoot.render(
+			<FilmGraph 
+				ref={this._graph}
+				width={canvasWidth}
+				height={canvasHeight}
+				uri={this._form.current.getURI()}
+				events={{doubleClick: this.openLeftDrawer}}/>
+		)
 	}
 
-	closeRightDrawer = () => this.setState({openRightDrawer: false})
-	closeLeftDrawer  = () => this.setState({
-									openLeftDrawer: false,
-									poster_src: '',
-									poster_label: '',
-									poster_alt: '',
-									imdb_uri: ''
-								})
-
+	closeRightDrawer = () => this.setState({
+		openRightDrawer: false
+	})
 
 	openRightDrawer = (event) => {
 		this.closeRightDrawer()
 		this.setState({openRightDrawer: true})
 	}
+	
+	closeLeftDrawer  = () => this.setState({
+		openLeftDrawer: false,
+		poster_src:     '',
+		poster_label:   '',
+		poster_alt:     '',
+		imdb_uri:       ''
+	})
+
 	openLeftDrawer  = (event) => {
 		this.closeLeftDrawer()
         var id = this._graph.current._network.current.Network.getSelectedNodes()[0]
         var selectedNode = this._graph.current.state.nodes.filter(n => n.id === id)[0]
-		console.log(selectedNode)
 		this.setState({
 			openLeftDrawer: true,
-			poster_src: selectedNode.poster,
-			poster_alt: selectedNode.label + ' teljes méretű posztere.',
-			imdb_uri: selectedNode.uri
+			poster_src:     selectedNode.poster,
+			poster_alt:     selectedNode.label + ' teljes méretű posztere.',
+			imdb_uri:       selectedNode.uri
 		})
 		if (selectedNode.group === 'actors') {
 			this.setState({

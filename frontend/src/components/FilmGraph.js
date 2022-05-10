@@ -95,51 +95,37 @@ class FilmGraph extends React.Component {
     }
 
     componentDidMount() {
-        try {
-            console.log(this.state.uri)
-            fetch(this.state.uri)
-                .then(response => {
-                    if (response.ok) {
-                        return response.json()
-                    } else {
-                        throw new Error ('Backend query failed')
-                    }
-                })
-                .then(json => this.setState({
-                    nodes: json.graph.nodes,
-                    edges: json.graph.edges
-                }));
-        } catch(error) {
-            console.log(error)
-        }
+        console.log(this.state.uri)
+        fetch(this.state.uri)
+            .then(response => response.json())
+            .then(json => this.setState({
+                nodes: json.nodes,
+                edges: json.edges
+            }))
+            .catch((error) => console.log(error))
     }
 
     render() {
+        // vis.js only supports displaying static graphs.
+        // To display the data stored in this instance's state,
+        // a random key is used to make a distinct deep copy.
         const key = Math.random()
-        try {
-            return(
-            <>
-                <Graph
-                    ref={this._network}
-                    key={key}
-                    graph={{
-                        nodes: this.state.nodes.map(n => Object.assign(n, {network: key})),
-                        edges: this.state.edges.map(e => Object.assign(e, {network: key})),
-                    }}
-                    options={{
-                        ...options,
-                        width: this.state.width,
-                        height: this.state.height
-                    }}
-                    events={this.state.events}
-                />
-            </>
-            )
-        }
-        catch(error) {
-            console.log(error)
-        }
-        return (<></>)
+        return(
+            <Graph
+                ref={this._network}
+                key={key}
+                graph={{
+                    nodes: this.state.nodes.map(n => Object.assign(n, {network: key})),
+                    edges: this.state.edges.map(e => Object.assign(e, {network: key})),
+                }}
+                options={{
+                    ...options,
+                    width: this.state.width,  // TODO: fix the sizing of the canvas
+                    height: this.state.height
+                }}
+                events={this.state.events}
+            />
+        )
     }
 }
 

@@ -25,30 +25,25 @@ class SearchBar extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-            name: props.name,
-            label: props.label,
-            value: props.value,
-            onChange: props.onChange,   
-
-            error: false,
-            helperText: '',
-            hidden: props.hidden
+            name:       props.name,
+            label:      props.label,
+            value:      props.value,
+            onChange:   props.onChange,   
+            hidden:     props.hidden,
+            error:      false,
+            helperText: ''
         }
     }
 
-    error(helperText) {
-        this.setState({
-            error: true,
-            helperText: helperText
-        })
-    }
+    error = (helperText) =>  this.setState({
+        error:      true,
+        helperText: helperText
+    })
 
-    clearError() {
-        this.setState({
-            error: false,
-            helperText: ''
-        })
-    }
+    clearError = () => this.setState({
+        error:      false,
+        helperText: ''
+    })
 
     hide   = () => this.setState({hidden: true})
     unhide = () => this.setState({hidden: false})

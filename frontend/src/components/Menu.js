@@ -42,9 +42,9 @@ class Menu extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-            modeGraph: props.modeGraph,
-            onClick: props.onClick,
-            pathButtonSx: props.modeGraph ? unselectedSx : selectedSx,
+            onClick:       props.onClick,
+            modeGraph:     props.modeGraph,
+            pathButtonSx:  props.modeGraph ? unselectedSx : selectedSx,
             graphButtonSx: props.modeGraph ? selectedSx : unselectedSx
         }
         this._pathButton  = React.createRef()
@@ -52,14 +52,14 @@ class Menu extends React.Component {
     }
 
     graphMode = () => this.setState({
-            modeGraph: true,
-            pathButtonSx: unselectedSx,
+            modeGraph:     true,
+            pathButtonSx:  unselectedSx,
             graphButtonSx: selectedSx  
         })
     
     pathMode = () => this.setState({
-        modeGraph: false,
-        pathButtonSx: selectedSx,
+        modeGraph:     false,
+        pathButtonSx:  selectedSx,
         graphButtonSx: unselectedSx  
     })
 
