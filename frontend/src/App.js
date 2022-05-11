@@ -9,6 +9,8 @@ import Drawer from '@mui/material/Drawer'
 import Fab from '@mui/material/Fab';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 
+import LinearProgress from '@mui/material/LinearProgress';
+
 class App extends React.Component {
 
     constructor(props){
@@ -16,30 +18,31 @@ class App extends React.Component {
 		this._form  = React.createRef()
 		this._graph = React.createRef()
 		this.state = {
-			openLeftDrawer:  false,
-			openRightDrawer: false,
-			poster_src:      '',
-			poster_label:    '',
-			poster_alt:      '',
-			imdb_uri:        ''
+			openLeftDrawer:     false,
+			openRightDrawer:    false,
+			progressbar_height: 0,
+			poster_src:         '',
+			poster_label:       '',
+			poster_alt:         '',
+			imdb_uri:           ''
 		}
 	}
 
 	handleSubmit = (event) => {
 		this._form.current.setDistance()
+		this.setState({progressbar_height: 5})
 
 		const canvas = document.getElementById('canvas')
-		const canvasWidth  = canvas.clientWidth;
-		const canvasHeight = canvas.clientHeight;
-
-		const canvasRoot = ReactDOM.createRoot(canvas)
-		canvasRoot.render(
+		ReactDOM.createRoot(canvas).render(
 			<FilmGraph 
 				ref={this._graph}
-				width={canvasWidth}
-				height={canvasHeight}
+				width={canvas.clientWidth}
+				height={canvas.clientHeight}
 				uri={this._form.current.getURI()}
-				events={{doubleClick: this.openLeftDrawer}}/>
+				events={{
+					doubleClick: this.openLeftDrawer,
+					stabilized:  () => this.setState({progressbar_height: 0})
+				}}/>
 		)
 	}
 
@@ -93,7 +96,11 @@ class App extends React.Component {
         return (
 			<div>
 				<header className="App-header">
-					<Form ref={this._form} onSubmit={this.handleSubmit}/>
+					<Form ref={this._form} onSubmit={this.handleSubmit}/>					
+					
+					<LinearProgress sx={{
+						height: this.state.progressbar_height, 
+						width: '100%'}}/>
 					
 					<Drawer className='info-panel'
 						anchor='left'

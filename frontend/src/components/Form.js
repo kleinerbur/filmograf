@@ -122,7 +122,7 @@ class Form extends React.Component {
                     ref={this._slider}
                     name='depth'
                     value={this.state.depth}
-                    max={3}
+                    max={4}
                     onChange={this.handleSliderChange}
                     hidden={!this.state.modeGraph}
                 />
