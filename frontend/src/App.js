@@ -167,16 +167,14 @@ class App extends React.Component {
 					</Drawer>
 				</header>
 				
-				<div className='helpButtonContainer'>
-					<Fab color='secondary' aria-label='help' onClick={this.openHelpDrawer}
-						sx={{
-							position: 'relative',
-							top: 20,
-							left: 20
-						}}>
-						<QuestionMarkIcon/>
-					</Fab>
-				</div>
+				<Fab color='secondary' aria-label='help' onClick={this.openHelpDrawer}
+					sx={{
+						position: 'absolute',
+						bottom: 20,
+						left: 20
+					}}>
+					<QuestionMarkIcon/>
+				</Fab>
 			</div>
         )
     }

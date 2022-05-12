@@ -26,7 +26,9 @@ class Form extends React.Component {
         this._submit = React.createRef()
         this.state = {
             ...defaultValues,
-            onSubmit: props.onSubmit
+            onSubmit: props.onSubmit,
+            leftError: false,
+            rightError: false
         }
     }
     
@@ -52,13 +54,26 @@ class Form extends React.Component {
                 .then(json => {
                     if (json.nodeExists) {
                         searchbar.clearError()
+                        name === 'left' 
+                            ? this.setState({leftError: false})
+                            : this.setState({rightError: false})
                         this.setState({[name]: value})
-                        this._submit.current.enable()
+                        if (!this.state.leftError && !this.state.rightError)
+                            this._submit.current.enable()
                     } else {
                         searchbar.error('Nincs ilyen színész / film az adatbázisban!')
+                        name === 'left' 
+                            ? this.setState({leftError: true})
+                            : this.setState({rightError: true})
                         this.setState({[name]: ''})
                     }})
-                .catch((error) => searchbar.error('Az adatbázis pillanatnyilag nem elérhető.'))
+                .catch((error) => {
+                    console.log(error)
+                    searchbar.error('Az adatbázis pillanatnyilag nem elérhető.')
+                    name === 'left' 
+                        ? this.setState({leftError: true})
+                        : this.setState({rightError: true})
+                })
         }
     }
 
