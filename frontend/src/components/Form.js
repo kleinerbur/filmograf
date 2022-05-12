@@ -44,6 +44,8 @@ class Form extends React.Component {
         if (value === '') {
             this.setState({[name]: ''})
             searchbar.clearError()
+            if (this.state.left != '' || this.state.right != '')
+                this._submit.current.enable()
         } else {
             fetch(API_URI + 'exists?search=' + value)
                 .then(response => response.json())
