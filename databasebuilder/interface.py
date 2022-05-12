@@ -163,8 +163,6 @@ class DatabaseBuilder:
                 executor.submit(self.pull_film_data, film.getID())
         if VERBOSE: self.progressbar.clear()
 
-        log.info(len(self.films))
-
         merged_casts = set([id for film in self.films for (id, role) in film.cast])
         log.info(f'Pulling actor data for {len(merged_casts)} actors')
         if VERBOSE: self.progressbar = tqdm(total=len(merged_casts), position=0, leave=False)
