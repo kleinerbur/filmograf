@@ -1,25 +1,5 @@
 import TextField from '@mui/material/TextField';
 import React from 'react';
-import './Form.css';
-
-const defaultStyle = {
-    minWidth: 400,
-    maxWidth: 400,
-    fontFamily: 'Bahnschrift',
-    fontSize: '15pt',
-    color: 'white',
-    '& label': {
-        fontFamily: 'Bahnschrift',
-    },
-    '& label.Mui-focused': {
-        color: 'white',
-        fontFamily: 'Bahnschrift',
-    },
-    input: {
-        color: 'white'
-    }
-}
-
 
 class SearchBar extends React.Component {
     constructor(props) {
@@ -57,9 +37,7 @@ class SearchBar extends React.Component {
                     label={this.state.label}
                     
                     variant='filled'
-                    color='secondary'
-                    type="text"
-                    sx={defaultStyle}
+                    type='text'
                     
                     hidden={this.state.hidden}
 

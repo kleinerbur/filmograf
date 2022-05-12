@@ -1,0 +1,243 @@
+@import 'colors/default.css';
+
+.App-header {
+  background-color: var(--base);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: var(--light);
+
+  font-family: 'Bahnschrift';
+}
+
+.form {
+  display: flex;
+  justify-content: center;
+  margin-top: auto;
+  margin-bottom: auto;
+  position: relative;
+}
+
+h1.title {
+  font-weight: lighter;
+  font-size: 1.5em;
+  margin: auto;
+  color: var(--light);
+}
+
+h2.distanceLabel {
+  font-weight: lighter;
+  font-size: 1em;
+  margin: auto;
+  margin-left: 200px;
+}
+
+
+/* ToggleButton */
+
+.MuiButtonGroup-root {
+  margin: 1em;
+}
+
+.MuiButton-root {
+  border: 1px solid var(--bg) !important;
+  background-color: var(--bg) !important;
+  color: var(--dark) !important;
+  font-weight: bold !important;
+  font-size: 0.6em !important;
+}
+
+.MuiButton-root:hover {
+  background-color: var(--light) !important;
+}
+
+.MuiButton-root:disabled {
+  background-color: var(--base) !important;
+  color: var(--light) !important;
+}
+
+
+/* SearchBar */
+
+.MuiFormControl-root {
+  top: 1.9em;
+  bottom: 0;
+  width: 400px;
+  font-size: 0.8em;
+}
+
+.MuiInputBase-root {
+  color: var(--light) !important;
+  background-color: var(--bg) !important;
+}
+
+.MuiInputLabel-root {
+  font-family: 'Bahnschrift' !important;
+  font-size: 0.9em !important;
+}
+
+.MuiInputLabel-root::after {
+  color: var(--dark) !important;
+}
+
+.MuiFormHelperText-root {
+  font-family: 'Bahnschrift' !important;
+  font-size: 0.7em !important;
+}
+
+
+/* DepthSlider */
+
+.MuiSlider-root {
+  top: 1em;
+  bottom: 0;
+  right: 2em;
+  left: 2em;
+
+  margin-top: 1.5em;
+  color: var(--light) !important;
+
+  height: 8px !important;
+  width: 400px !important;
+}
+
+.MuiSlider-thumb {
+  height: 22px !important;
+  width: 22px !important;
+  border-radius: 0 !important;
+  transform: rotate(45deg) translate(-115%, -25%) !important;
+  transform-origin: bottom left;
+}
+
+.MuiSlider-thumb:focus,
+.MuiSlider-thumb:hover,
+.Mui-active,
+.Mui-focusVisible {
+  box-shadow: inherit !important;
+}
+
+.MuiSlider-thumb:before {
+  display: none;
+}
+
+.MuiSlider-valueLabel {
+  font-size: 1.2em !important;
+  font-weight: bold !important;
+  font-family: 'Bahnschrift' !important;
+  background: none !important;
+  color: var(--light) !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 32px !important;
+  height: 32px !important;
+  transform-origin: bottom left !important;
+  transform: rotate(-45deg) translate(10%, -60%) !important;
+}
+
+
+/* SubmitButton */
+
+.MuiIconButton-root {
+  float: left;
+  font-family: "Bahnschrift";
+  top: 1.75em;
+  bottom: 0;
+  left: 4em;
+  right: 4em;
+
+  width: 130px;
+  height: 50px;
+
+  color: var(--light) !important;
+  border: 4px solid var(--light) !important;
+  border-radius: 10px !important;
+  transition: 0.3s ease-in-out !important;
+}
+
+.MuiIconButton-root:disabled {
+  color: var(--dark) !important;
+  background-color: var(--bg) !important;
+  border: 0px solid !important;
+}
+
+.MuiIconButton-root:hover {
+  color: var(--dark) !important;
+  background-color: var(--light) !important;
+}
+
+
+/* FilmGraph */
+
+#canvas-container {
+  overflow: hidden !important;
+  background-color: var(--canvas) !important;
+}
+
+canvas {
+  min-width: 1700px !important;
+  min-height: 700px !important;
+  background-color: var(--canvas) !important;
+}
+
+
+/* left drawer */
+
+.info-panel {
+  align-items: 'center';
+  width: 400;
+  overflow: 'hidden';
+}
+
+.poster {
+  height: 100%;
+  width: 700;
+  object-fit: 'cover';
+}
+
+.posterlabel {
+  font-family: 'Bahnschrift';
+  color: white;
+  margin: auto;
+  margin-top: -160px;
+  position: relative;
+  text-shadow: 0 0 10px var(--dark);
+}
+
+.imdb-button {
+  width: 100px;
+  display: block;
+  margin: auto;
+  margin-top: -100px;
+  border: 3px solid var(--light);
+  border-radius: 15px;
+  cursor: pointer;
+}
+
+.imdb-button:hover {
+  scale: 1.1;
+  box-shadow: 0 0 50px white;
+  transition: 0.2s ease-in-out;
+}
+
+.imdb-button:active {
+  box-shadow: 0 0 50px var(--base);
+}
+
+/* right drawer */
+
+h2.title { 
+  font-family: 'Bahnschrift';
+  font-weight: lighter;
+  font-size: 2em;
+  color: var(--dark);
+  padding: 10px 0 0 50px;
+  width: 400px;
+}
+
+p {
+  font-size: 1em;
+  width: 400px;
+  padding: 50px;
+}

@@ -1,5 +1,4 @@
-import './Form.css';
-import Menu from './Menu';
+import SwitchButtons from './SwitchButtons';
 import SearchBar from './SearchBar';
 import DepthSlider from './DepthSlider';
 import SubmitButton from './SubmitButton';
@@ -20,7 +19,7 @@ class Form extends React.Component {
 
     constructor(props) {
         super(props)
-        this._menu   = React.createRef()
+        this._switch = React.createRef()
         this._left   = React.createRef()
         this._right  = React.createRef()
         this._slider = React.createRef()
@@ -32,7 +31,7 @@ class Form extends React.Component {
     }
     
     getRef(id) {
-        if (id === 'menu')   return this._menu
+        if (id === 'switch') return this._switch
         if (id === 'left')   return this._left
         if (id === 'right')  return this._right
         if (id === 'depth')  return this._slider
@@ -67,11 +66,12 @@ class Form extends React.Component {
     handleModeSwitch = (event) => {
         this.setState({modeGraph: event.target.id === 'graphButton'})
         if (event.target.id === 'graphButton') {
-            this._menu.current.graphMode()
+            this.setState({distance: ''})
+            this._switch.current.graphMode()
             this._right.current.hide()
             this._slider.current.unhide()
         } else {
-            this._menu.current.pathMode()
+            this._switch.current.pathMode()
             this._right.current.unhide()
             this._slider.current.hide()
         }
@@ -96,10 +96,11 @@ class Form extends React.Component {
 
     render() {
         return(
-            <ul id='form' className="searchMenu">
-                <h2 style={{fontFamily: "Bahnschrift", fontWeight: "lighter", marginRight: 100, marginLeft: 50}}>film-o-gráf</h2>
-                <Menu className="modeButtons"
-                    ref={this._menu}
+            <ul className="form">
+                <h1 className="title">film-o-gráf</h1>
+                <SwitchButtons
+                    ref={this._switch}
+                    name='switch'
                     modeGraph={this.state.modeGraph}
                     onClick={this.handleModeSwitch}
                 />
@@ -131,7 +132,7 @@ class Form extends React.Component {
                     onClick={this.state.onSubmit}
                     disabled={this.state.left === ''}
                 />
-                <h3 style={{fontFamily: "Bahnschrift", fontWeight: "lighter", margin: 'auto', marginLeft: 200}}>{this.state.distance}</h3>
+                <h2 className='distanceLabel'>{this.state.distance}</h2>
             </ul>
         )
     }

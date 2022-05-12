@@ -1,15 +1,15 @@
-import './App.css';
 import Form from './components/Form';
 import FilmGraph from './components/FilmGraph';
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 
+import LinearProgress from '@mui/material/LinearProgress';
 import Drawer from '@mui/material/Drawer'
-
 import Fab from '@mui/material/Fab';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 
-import LinearProgress from '@mui/material/LinearProgress';
+import './style/App.css';
 
 class App extends React.Component {
 
@@ -26,22 +26,25 @@ class App extends React.Component {
 			poster_alt:         '',
 			imdb_uri:           ''
 		}
+		this.canvas = document.getElementById('canvas-container')
+		this.canvasRoot = ReactDOM.createRoot(this.canvas)
 	}
 
 	handleSubmit = (event) => {
 		this._form.current.setDistance()
 		this.setState({progressbar_height: 5})
 
-		const canvas = document.getElementById('canvas')
-		ReactDOM.createRoot(canvas).render(
+		this.canvasRoot.unmount()
+		this.canvasRoot = ReactDOM.createRoot(this.canvas)
+		this.canvasRoot.render(
 			<FilmGraph 
 				ref={this._graph}
-				width={canvas.clientWidth}
-				height={canvas.clientHeight}
+				width={this.canvas.clientWidth}
+				height={this.canvas.clientHeight}
 				uri={this._form.current.getURI()}
 				events={{
 					doubleClick: this.openLeftDrawer,
-					stabilized:  () => this.setState({progressbar_height: 0})
+					stabilized:   () => this.setState({progressbar_height: 0})
 				}}/>
 		)
 	}
@@ -107,20 +110,13 @@ class App extends React.Component {
 						open={this.state.openLeftDrawer}
 						onKeyDown={this.handleDrawerKeyDown}
 						ModalProps={{ onBackdropClick: this.handleBackdropClick }}
-						sx={{
-							alignItems: 'center',
-							width: 400,
-							overflow: 'hidden'
-						}}
 					>
-						<img src={this.state.poster_src}
-							alt={this.state.poster_alt}
-							style={{
-								height: '100%',
-								width: 700,
-								objectFit: 'cover'
-							}}/>
-						<h1 className='posterlabel'>{this.state.poster_label}</h1>
+						<img className='poster' 
+							src={this.state.poster_src}
+							alt={this.state.poster_alt}/>
+						<h1 className='posterlabel'>
+							{this.state.poster_label}
+						</h1>
 						<a href={this.state.imdb_uri} target='_blank' rel="noreferrer">
 							<img className='imdb-button'
 								src='https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/IMDB_Logo_2016.svg/575px-IMDB_Logo_2016.svg.png'
@@ -129,31 +125,56 @@ class App extends React.Component {
 						</a>
 					</Drawer>
 
-					<Drawer className='help-panel'
+					<Drawer className='helpPanel'
 						anchor='right'
 						open={this.state.openRightDrawer}
 						onKeyDown={this.handleDrawerKeyDown}
 						ModalProps={{ onBackdropClick: this.handleBackdropClick }}
-						sx={{
-							alignItems: 'center',
-							width: 400,
-							overflow: 'hidden'
-						}}
 					>
-						<h1>film-o-gráf</h1>
-						<p>Lorem ipsum dolor sit amet</p>
+						<h2 className='title'>film-o-gráf</h2>
+						<p>
+							A projektet az <a href='https://oracleofbacon.org/' target='_blank' rel='noreferrer'><b>Oracle of Bacon</b></a> ihlette,
+							ahol minden színészt egy numerikus értékkel ruháztak fel, ami a távolságukat mutatja Kevin Bacontől.
+							<br/>
+							<br/>
+							X és Y távolsága 1, ha mindketten szerepeltek legalább egy közös filmben.
+							X és Y távolsága 2, ha nincs közös filmjük, de mindkettőjüknek van legalább egy közös filmje Z-vel.
+							(stb.)
+							<br/>
+							<br/>
+							A film-o-gráf webalkalmazás lehetőséget ad lekérdezni a legrövidebb utat bármely két színész / film között, ehhez kattints az <b>Út </b> 
+							gombra, és adj meg egy-egy kulcsszót a színészekre / filmekre. Az út csak akkor rajzolható ki, ha mindkét kulcsszó illeszkedik
+							valamely rekordra az adatbázisban. Ha nem létezik út a két rekord között, a távolságuk '-'.
+							<br/>
+							<br/>
+							A <b>Gráf</b> gombra kattintva az egyik szövegdoboz helyén egy csúszka jelenik meg, amelyen a mélységet adhatod meg.
+							Egy valid kulcsszó megadása és a mélység beállítása után a <b>MEHET</b> gombra kattintva kirajzolódik egy gráf, melyben
+							minden olyan film és színész szerepel, akitől a keresett színész/film távolsága legfeljebb a mélység értéke.
+							<br/>
+							<br/>
+							A csomópontok mozgathatók, dupla kattintásra pedig megtekinthetővé válik a teljes méretű képük. A képen megjelenő IMDb 
+							gomb a színész/film IMDb oldalára irányít.
+							<br/>
+							<br/>
+							Készítette:
+							<br/>
+							<b>Bur Bence</b>
+							<br/>
+							<i>pt46p3@inf.elte.hu</i>
+						</p>
 					</Drawer>
 				</header>
-				<Fab color='primary' aria-label='?' onClick={this.openRightDrawer}
+				
+				<Fab color='primary' aria-label='help' onClick={this.openRightDrawer}
 					sx={{
 						position: 'absolute',
-						bottom: 20,
-						right: 20,
+						bottom: 30,
+						right: 30,
 					}}>
 					<QuestionMarkIcon/>
 				</Fab>
 			</div>
-        );
+        )
     }
 }
 

@@ -1,7 +1,6 @@
 import Graph from 'vis-react';
 import React from 'react';
 
-
 const options = {
     layout: {
         improvedLayout: true,
@@ -85,8 +84,6 @@ class FilmGraph extends React.Component {
         super(props)
         this._network = React.createRef()
         this.state = {
-            width: props.width.toString(),
-            height: "830",
             uri: props.uri,
             nodes: [],
             edges: [],
@@ -118,11 +115,7 @@ class FilmGraph extends React.Component {
                     nodes: this.state.nodes.map(n => Object.assign(n, {network: key})),
                     edges: this.state.edges.map(e => Object.assign(e, {network: key})),
                 }}
-                options={{
-                    ...options,
-                    width: this.state.width,  // TODO: fix the sizing of the canvas
-                    height: this.state.height
-                }}
+                options={options}
                 events={this.state.events}
             />
         )
