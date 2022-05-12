@@ -14,8 +14,7 @@ const options = {
         color: {
             color: "rgba(0,0,0,0.4)",
             hover: "rgba(0,0,0,0.6)",
-            highlight: "rgba(0,0,0,0.8)",
-            opacity: 0.4
+            highlight: "rgba(0,0,0,0.8)"
         },
         font: {
             face: 'Bahnschrift',

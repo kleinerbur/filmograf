@@ -99,7 +99,7 @@ def getDistance(request:Request) -> JsonResponse:
         return JsonResponse({"distance": distance/2})
 
 
-def getPath(request):
+def getPath(request:Request) -> JsonResponse:
     """
     Calculates the shortest path between two nodes that match the given keywords.
     Returns a JSON response containing a list of nodes under the key 'nodes'
@@ -161,7 +161,7 @@ def getPath(request):
         return JsonResponse({"nodes": nodes, "edges": edges})
 
 
-def getGraph(request):
+def getGraph(request:Request) -> JsonResponse:
     """
     Creates a graph centered around a node that matches the given keyword to the given depth.
     Returns a JSON response containing a list of nodes under the key 'nodes'

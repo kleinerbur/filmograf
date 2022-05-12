@@ -33,9 +33,9 @@ class Form extends React.Component {
     }
     
     getRef(id) {
-        if (id === 'switch') return this._switch
         if (id === 'left')   return this._left
         if (id === 'right')  return this._right
+        if (id === 'switch') return this._switch
         if (id === 'depth')  return this._slider
     }
 
@@ -46,7 +46,7 @@ class Form extends React.Component {
         if (value === '') {
             this.setState({[name]: ''})
             searchbar.clearError()
-            if (this.state.left != '' || this.state.right != '')
+            if (!this.state.modeGraph && (this.state.left != '' || this.state.right != ''))
                 this._submit.current.enable()
         } else {
             fetch(API_URI + 'exists?search=' + value)

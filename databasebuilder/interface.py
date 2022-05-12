@@ -212,7 +212,15 @@ class DatabaseBuilder:
 
     def add_actor_to_database(self, actor:Actor) -> None:
         try:
-            self.n4j.query(f'CREATE (a:Actor {{group:"actors", imdb_id:"{actor.id}", name:"{actor.name}", image:"{actor.image}", poster:"{actor.poster}", imdb_uri:"https://www.imdb.com/name/nm{actor.id}"}})')
+            self.n4j.query(f'''
+            CREATE (a:Actor {{
+                group:"actors", 
+                imdb_id:"{actor.id}", 
+                name:"{actor.name}", 
+                image:"{actor.image}", 
+                poster:"{actor.poster}", 
+                imdb_uri:"https://www.imdb.com/name/nm{actor.id}"}})
+            ''')
         except ConstraintError:
             log.error(f'Actor with ID {actor.id} ({actor.name}) already exists, skipping')
         if VERBOSE: self.progressbar.update()
@@ -220,41 +228,24 @@ class DatabaseBuilder:
 
     def add_film_to_database(self, film:Film) -> None:
         try:
-            self.n4j.query(f'CREATE (f:Film {{group:"films", imdb_id:"{film.id}", title:"{film.title}", image:"{film.image}", poster:"{film.poster}", imdb_uri:"https://www.imdb.com/title/tt{film.id}"}})')
+            self.n4j.query(f'''
+            CREATE (f:Film {{
+                group:"films", 
+                imdb_id:"{film.id}", 
+                title:"{film.title}", 
+                image:"{film.image}", 
+                poster:"{film.poster}", 
+                imdb_uri:"https://www.imdb.com/title/tt{film.id}"}})
+            ''')
             for (actor_id, role) in film.cast:
-                self.n4j.query(f'MATCH (actor:Actor {{imdb_id:"{actor_id}"}}), (film:Film {{imdb_id:"{film.id}"}}) MERGE (actor)-[:STARRED_IN {{role: "{role}"}}]->(film)')
+                self.n4j.query(f'''
+                MATCH (actor:Actor {{imdb_id:"{actor_id}"}}), (film:Film {{imdb_id:"{film.id}"}}) 
+                MERGE (actor)-[:STARRED_IN {{role: "{role}"}}]->(film)
+                ''')
         except ConstraintError:
             log.error(f'Film with ID {film.id} ("{film.title}") already exists, skipping')
         if VERBOSE: self.progressbar.update()
-
-
-    def get_actor(self, id:str=None, name:str=None) -> Actor:
-        '''
-        Returns an Actor object with matching name or ID, if one exists in the databank.\n
-        If an ID is provided, name check is skipped.\n
-        Returns None if no ID or name is given, or if there are no matching Actors in the databank.
-        '''
-        filtered_list = []
-        if   id:   filtered_list = [actor for actor in self.actors if actor.id == id]
-        elif name: filtered_list = [actor for actor in self.actors if actor.name == name]
-        if not filtered_list:
-            return None
-        return filtered_list[0]
-
-
-    def get_film(self, id:str=None, title:str=None) -> Film:
-        '''
-        Returns a Film object with matching title or id, if one exists in the databank.\n
-        If an ID is provided, title check is skipped.
-        Returns None if no ID or title is given, or if there are no matching Films in the databank.
-        '''
-        filtered_list = []
-        if   id:    filtered_list = [film for film in self.films if film.id == id]
-        elif title: filtered_list = [film for film in self.films if film.title == title]
-        if not filtered_list:
-            return None
-        return filtered_list[0]
-
+        
 
     def toJSON(self) -> str:
         '''Converts the databank to a JSON formatted string.'''
