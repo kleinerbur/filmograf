@@ -241,3 +241,58 @@ p {
   width: 400px;
   padding: 50px;
 }
+
+
+
+/* phone */
+@media (max-width: 600px) {
+
+  .App-header {
+    min-height: 550px;
+    max-height: 600px;
+  }
+
+  .form {
+    display: grid;
+  }
+
+  h1.title {
+    margin: auto;
+  }
+
+  h2.distanceLabel {
+    margin: auto;
+    margin-left: 140px;
+    margin-top: 90px;
+  }
+
+  /* DepthSlider */
+  .MuiSlider-root {
+    margin-left: -40px;
+    margin-top: 70px;
+    color: var(--light) !important;
+
+    height: 8px !important;
+    width: 400px !important;
+  }
+
+  /* SubmitButton */
+  .MuiIconButton-root {
+    top: 60px;
+    left: 125px;
+  }
+
+
+  /* FilmGraph */
+  canvas {
+    min-width: 600px !important;
+    min-height: 700px !important;
+    background-color: var(--canvas) !important;
+  }
+
+  .poster {
+    height: 100%;
+    width: 500px;
+    object-fit: 'cover';
+  }  
+}
