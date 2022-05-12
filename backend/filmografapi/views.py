@@ -155,7 +155,7 @@ def getPath(request):
                         label: edge.role
                     }}] as edges''')[0][0][0]
             except IndexError:
-                return JsonResponse({})
+                return JsonResponse({"nodes": [{"hidden": True}], "edges": []})
             except Exception as e:
                 return JsonResponse({"error": f"{e}"})
         return JsonResponse({"nodes": nodes, "edges": edges})
@@ -210,6 +210,6 @@ def getGraph(request):
                 }}''')[0]]
             return JsonResponse({"nodes": nodes, "edges": edges})
         except IndexError:
-            return JsonResponse({"nodes": [], "edges": []})
+            return JsonResponse({"nodes": [{"hidden": True}], "edges": []})
         except Exception as e:
             return JsonResponse({"error": f"{e}"}) 
