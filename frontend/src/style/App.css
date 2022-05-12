@@ -18,6 +18,7 @@
   margin-top: auto;
   margin-bottom: auto;
   position: relative;
+  background-color: var(--base);
 }
 
 h1.title {
@@ -25,6 +26,7 @@ h1.title {
   font-size: 1.5em;
   margin: auto;
   color: var(--light);
+  margin-right: 60px;
 }
 
 h2.distanceLabel {
@@ -38,11 +40,13 @@ h2.distanceLabel {
 /* ToggleButton */
 
 .MuiButtonGroup-root {
-  margin: 1em;
+  margin: 1em 1em 1em 0;
+  border: 0px !important;
 }
 
 .MuiButton-root {
-  border: 1px solid var(--bg) !important;
+  border: 3px solid var(--bg) !important;
+  border-radius: 2px !important;
   background-color: var(--bg) !important;
   color: var(--dark) !important;
   font-weight: bold !important;
@@ -85,6 +89,8 @@ h2.distanceLabel {
 .MuiFormHelperText-root {
   font-family: 'Bahnschrift' !important;
   font-size: 0.7em !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 
@@ -177,7 +183,7 @@ h2.distanceLabel {
 
 canvas {
   min-width: 1700px !important;
-  min-height: 700px !important;
+  min-height: 800px !important;
   background-color: var(--canvas) !important;
 }
 
@@ -227,6 +233,10 @@ canvas {
 
 /* right drawer */
 
+.helpButtonContainer {
+  height: 100%;
+}
+
 h2.title { 
   font-family: 'Bahnschrift';
   font-weight: lighter;
@@ -242,11 +252,17 @@ p {
   padding: 50px;
 }
 
-
+@media (max-width: 1600px) {
+  h1.title {
+    width: 200px;
+    margin-left: 80px;
+    margin-right: 0;
+    font-size: 1em
+  }
+}
 
 /* phone */
 @media (max-width: 600px) {
-
   .App-header {
     min-height: 550px;
     max-height: 600px;
@@ -257,14 +273,47 @@ p {
   }
 
   h1.title {
+    width: 400px;
+    text-align: center;
     margin: auto;
+    font-size: 1.3em;
   }
 
   h2.distanceLabel {
+    width: 400px;
+    text-align: center;
     margin: auto;
-    margin-left: 140px;
     margin-top: 90px;
   }
+
+  /* SearchBar */
+  .MuiFormControl-root {
+    /* top: 1.9em; */
+    /* bottom: 0; */
+    /* width: 400px; */
+    font-size: 0.8em;
+  }
+  
+  .MuiInputBase-root {
+    width: 380px;
+  }
+  
+  .MuiInputLabel-root {
+    font-family: 'Bahnschrift' !important;
+    font-size: 0.9em !important;
+  }
+  
+  .MuiInputLabel-root::after {
+    color: var(--dark) !important;
+  }
+  
+  .MuiFormHelperText-root {
+    font-family: 'Bahnschrift' !important;
+    font-size: 0.7em !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
 
   /* DepthSlider */
   .MuiSlider-root {
@@ -273,7 +322,7 @@ p {
     color: var(--light) !important;
 
     height: 8px !important;
-    width: 400px !important;
+    width: 380px !important;
   }
 
   /* SubmitButton */

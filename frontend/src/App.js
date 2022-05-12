@@ -18,8 +18,8 @@ class App extends React.Component {
 		this._form  = React.createRef()
 		this._graph = React.createRef()
 		this.state = {
-			openLeftDrawer:     false,
-			openRightDrawer:    false,
+			openInfoDrawer:     false,
+			openHelpDrawer:     false,
 			progressbar_height: 0,
 			poster_src:         '',
 			poster_label:       '',
@@ -43,35 +43,35 @@ class App extends React.Component {
 				height={this.canvas.clientHeight}
 				uri={this._form.current.getURI()}
 				events={{
-					doubleClick: this.openLeftDrawer,
+					doubleClick: this.openInfoDrawer,
 					stabilized:   () => this.setState({progressbar_height: 0})
 				}}/>
 		)
 	}
 
-	closeRightDrawer = () => this.setState({
-		openRightDrawer: false
+	closeHelpDrawer = () => this.setState({
+		openHelpDrawer: false
 	})
 
-	openRightDrawer = (event) => {
-		this.closeRightDrawer()
-		this.setState({openRightDrawer: true})
+	openHelpDrawer = (event) => {
+		this.closeHelpDrawer()
+		this.setState({openHelpDrawer: true})
 	}
 	
-	closeLeftDrawer  = () => this.setState({
-		openLeftDrawer: false,
+	closeInfoDrawer  = () => this.setState({
+		openInfoDrawer: false,
 		poster_src:     '',
 		poster_label:   '',
 		poster_alt:     '',
 		imdb_uri:       ''
 	})
 
-	openLeftDrawer  = (event) => {
-		this.closeLeftDrawer()
+	openInfoDrawer  = (event) => {
+		this.closeInfoDrawer()
         var id = this._graph.current._network.current.Network.getSelectedNodes()[0]
         var selectedNode = this._graph.current.state.nodes.filter(n => n.id === id)[0]
 		this.setState({
-			openLeftDrawer: true,
+			openInfoDrawer: true,
 			poster_src:     selectedNode.poster,
 			poster_alt:     selectedNode.label + ' teljes méretű posztere.',
 			imdb_uri:       selectedNode.uri
@@ -85,14 +85,14 @@ class App extends React.Component {
 
 	handleDrawerKeyDown = (event) => {
 		if (event.code === 'Escape') {
-			this.closeLeftDrawer()
-			this.closeRightDrawer()
+			this.closeInfoDrawer()
+			this.closeHelpDrawer()
 		}
 	}
 
 	handleBackdropClick = (event) => {
-		this.closeLeftDrawer()
-		this.closeRightDrawer()
+		this.closeInfoDrawer()
+		this.closeHelpDrawer()
 	}
 
     render() {
@@ -106,8 +106,8 @@ class App extends React.Component {
 						width: '100%'}}/>
 					
 					<Drawer className='info-panel'
-						anchor='left'
-						open={this.state.openLeftDrawer}
+						anchor='right'
+						open={this.state.openInfoDrawer}
 						onKeyDown={this.handleDrawerKeyDown}
 						ModalProps={{ onBackdropClick: this.handleBackdropClick }}
 					>
@@ -126,8 +126,8 @@ class App extends React.Component {
 					</Drawer>
 
 					<Drawer className='helpPanel'
-						anchor='right'
-						open={this.state.openRightDrawer}
+						anchor='left'
+						open={this.state.openHelpDrawer}
 						onKeyDown={this.handleDrawerKeyDown}
 						ModalProps={{ onBackdropClick: this.handleBackdropClick }}
 					>
@@ -153,7 +153,7 @@ class App extends React.Component {
 							<br/>
 							<br/>
 							A csomópontok mozgathatók, dupla kattintásra pedig megtekinthetővé válik a teljes méretű képük. A képen megjelenő IMDb 
-							gomb a színész/film IMDb oldalára irányít.
+							gomb a színész/film IMDb oldalára irányít. A gráf élein a színész filmben játszott szerepe olvasható.
 							<br/>
 							<br/>
 							<br/>
@@ -167,14 +167,16 @@ class App extends React.Component {
 					</Drawer>
 				</header>
 				
-				<Fab color='secondary' aria-label='help' onClick={this.openRightDrawer}
-					sx={{
-						position: 'absolute',
-						bottom: 30,
-						right: 30,
-					}}>
-					<QuestionMarkIcon/>
-				</Fab>
+				<div className='helpButtonContainer'>
+					<Fab color='secondary' aria-label='help' onClick={this.openHelpDrawer}
+						sx={{
+							position: 'relative',
+							top: 20,
+							left: 20
+						}}>
+						<QuestionMarkIcon/>
+					</Fab>
+				</div>
 			</div>
         )
     }
