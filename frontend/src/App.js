@@ -101,7 +101,7 @@ class App extends React.Component {
 				<header className="App-header">
 					<Form ref={this._form} onSubmit={this.handleSubmit}/>					
 					
-					<LinearProgress sx={{
+					<LinearProgress color='secondary' sx={{
 						height: this.state.progressbar_height, 
 						width: '100%'}}/>
 					
@@ -156,6 +156,8 @@ class App extends React.Component {
 							gomb a színész/film IMDb oldalára irányít.
 							<br/>
 							<br/>
+							<br/>
+							<br/>
 							Készítette:
 							<br/>
 							<b>Bur Bence</b>
@@ -165,7 +167,7 @@ class App extends React.Component {
 					</Drawer>
 				</header>
 				
-				<Fab color='primary' aria-label='help' onClick={this.openRightDrawer}
+				<Fab color='secondary' aria-label='help' onClick={this.openRightDrawer}
 					sx={{
 						position: 'absolute',
 						bottom: 30,

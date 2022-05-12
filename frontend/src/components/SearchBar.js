@@ -37,6 +37,7 @@ class SearchBar extends React.Component {
                     label={this.state.label}
                     
                     variant='filled'
+                    color='secondary'
                     type='text'
                     
                     hidden={this.state.hidden}
