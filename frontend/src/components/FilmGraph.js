@@ -50,7 +50,7 @@ const options = {
             size: 60,
             shape: "image",
             font: {
-                size: 30,
+                size: 0,
                 face: 'Bahnschrift',
                 strokeWidth: 6
             }

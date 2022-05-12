@@ -39,26 +39,25 @@ class Form extends React.Component {
 
     handleSearchBarChange = (event) => {
         this._submit.current.disable()
-        const {name, value} = event.target;
+        var searchbar = this.getRef(event.target.id).current
+        const {name, value} = event.target
         if (value === '') {
             this.setState({[name]: ''})
-            this._submit.current.disable()
-            return
+            searchbar.clearError()
+        } else {
+            fetch(API_URI + 'exists?search=' + value)
+                .then(response => response.json())
+                .then(json => {
+                    if (json.nodeExists) {
+                        searchbar.clearError()
+                        this.setState({[name]: value})
+                        this._submit.current.enable()
+                    } else {
+                        searchbar.error('Nincs ilyen színész / film az adatbázisban!')
+                        this.setState({[name]: ''})
+                    }})
+                .catch((error) => searchbar.error('Az adatbázis pillanatnyilag nem elérhető.'))
         }
-        var searchbar = this.getRef(event.target.id).current
-        fetch(API_URI + 'exists?search=' + value)
-            .then(response => response.json())
-            .then(json => {
-                if (json.nodeExists) {
-                    searchbar.clearError()
-                    this.setState({[name]: value})
-                    this._submit.current.enable()
-                } else {
-                    searchbar.error('Nincs ilyen színész / film az adatbázisban!')
-                    this.setState({[name]: ''})
-                    this._submit.current.disable()
-                }})
-            .catch((error) => searchbar.error('Az adatbázis pillanatnyilag nem elérhető.'))
     }
 
     handleSliderChange = (event) => this.setState({depth: event.target.value})
@@ -66,10 +65,15 @@ class Form extends React.Component {
     handleModeSwitch = (event) => {
         this.setState({modeGraph: event.target.id === 'graphButton'})
         if (event.target.id === 'graphButton') {
-            this.setState({distance: ''})
+            this.setState({
+                distance: '',
+                right: ''
+            })
             this._switch.current.graphMode()
             this._right.current.hide()
             this._slider.current.unhide()
+            if (this.state.left == '')
+                this._submit.current.disable()
         } else {
             this._switch.current.pathMode()
             this._right.current.unhide()
@@ -78,17 +82,27 @@ class Form extends React.Component {
     }
 
     getURI() {
-        if (this.state.modeGraph)
+        if (this.state.modeGraph) 
             return(API_URI + 'graph?root=' + this.state.left + '&depth=' + this.state.depth)
-        return(API_URI + 'path?left=' + this.state.left + '&right=' + this.state.right)
+
+        var left  = this.state.left
+        var right = this.state.right
+        if (right == '') right = left
+        if (left  == '') left  = right
+        return(API_URI + 'path?left=' + left + '&right=' + right)
     }
 
     setDistance() {
         if (!this.state.modeGraph) {
-                fetch(API_URI + 'distance?left=' + this.state.left + '&right=' + this.state.right)
-                    .then(response => response.json())
-                    .then(response => this.setState({distance: 'Távolság: ' + response.distance}))
-                    .catch((error) => this.setState({distance: 'Távolság: ?'}))
+            var left  = this.state.left
+            var right = this.state.right
+            if (right == '') right = left
+            if (left  == '') left  = right
+
+            fetch(API_URI + 'distance?left=' + left + '&right=' + right)
+                .then(response => response.json())
+                .then(response => this.setState({distance: 'Távolság: ' + response.distance}))
+                .catch((error) => this.setState({distance: 'Távolság: ?'}))
         } else {
             this.setState({distance: ''})
         }
