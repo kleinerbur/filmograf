@@ -156,6 +156,7 @@ class DatabaseBuilder:
             for film in top_films:
                 executor.submit(self.pull_film_data, film.getID())
         if VERBOSE: self.progressbar.clear()
+        log.info(f'Finished pulling data for {len(self.films)} films.')
 
         merged_casts = set([id for film in self.films for (id, role) in film.cast])
         log.info(f'Pulling actor data for {len(merged_casts)} actors')
@@ -164,6 +165,7 @@ class DatabaseBuilder:
             for id in merged_casts:
                 executor.submit(self.pull_actor_data, id)
         if VERBOSE: self.progressbar.clear()
+        log.info(f'Finished pulling data for {len(self.actors)} actors.')
 
         log.info('Saving JSON snapshot')
         with open('snapshot.json', 'w') as jsonfile:
