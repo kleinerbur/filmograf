@@ -20,7 +20,6 @@ VERBOSE = False
 
 
 class SetEncoder(json.JSONEncoder):
-    '''JSON encoder class for converting classes with sets.'''
     def default(self, obj):
         if isinstance(obj, set):
             return list(obj)
@@ -28,7 +27,6 @@ class SetEncoder(json.JSONEncoder):
 
 
 class DatabaseBuilderEncoder(SetEncoder):
-    '''JSON encoder class for the FilmografData class.'''
     def default(self, obj):
         if isinstance(obj, Neo4jConnection) or isinstance(obj, tqdm):
             return
@@ -66,11 +64,9 @@ class Film:
             self.cast.add((actor.getID(), rolename))
         
     def toJSON(self) -> str:
-        '''Converts the Film object into a JSON formatted string.'''
         return json.dumps(self, cls=SetEncoder, sort_keys=True, indent=4)
 
     def fromJSON(json_dict) -> None:
-        '''Creates a new Film object from data from a JSON dictionary.'''
         return Film(fromJSON=True, id=json_dict['id'], title=json_dict['title'], cast=json_dict['cast'], image=json_dict['image'], poster=json_dict['poster'])
 
 
@@ -98,11 +94,9 @@ class Actor:
             self.poster = "https://t4.ftcdn.net/jpg/00/64/67/63/360_F_64676383_LdbmhiNM6Ypzb3FM4PPuFP9rHe7ri8Ju.jpg"
         
     def toJSON(self) -> str:
-        '''Converts the Film object into a JSON formatted string.'''
         return json.dumps(self, cls=SetEncoder, sort_keys=True, indent=4)
 
     def fromJSON(json_dict) -> None:
-        '''Creates a new Actor object from data from a JSON dictionary.'''
         return Actor(fromJSON=True, id=json_dict['id'], name=json_dict['name'], image=json_dict['image'])
 
 
@@ -177,13 +171,11 @@ class DatabaseBuilder:
 
 
     def pull_film_data(self, id:str) -> None:
-        '''Looks up a film based on its ID, creates a Film object from the data and adds it to the databank.'''
         self.films.add(Film(id))
         if VERBOSE: self.progressbar.update()
 
 
     def pull_actor_data(self, id:str) -> None:
-        '''Looks up an actor based on their ID, creates an Actor object from the data and adds it to the API's databank.'''
         self.actors.add(Actor(id, films=self.films))
         if VERBOSE: self.progressbar.update()
 
@@ -247,95 +239,18 @@ class DatabaseBuilder:
         if VERBOSE: self.progressbar.update()
         
 
+    def run_query(self, query):
+        self.n4j = Neo4jConnection(NEO4J_URI, NEO4J_USERNAME, NEO4J_PASSWORD)
+        try:
+            results = self.n4j.query(query)
+            return [result.data() for result in results]
+        except Exception as e:
+            log.error(e)
+        
+
     def toJSON(self) -> str:
         '''Converts the databank to a JSON formatted string.'''
         return json.dumps(self, cls=DatabaseBuilderEncoder, sort_keys=True, indent=4)
-
-
-class DatabaseInterface:
-    n4j: Neo4jConnection
-
-    def __init__(self):
-        self.n4j = Neo4jConnection(NEO4J_URI, NEO4J_USERNAME, NEO4J_PASSWORD)
-    
-    def __compare_against_actor(self, alias:str, keyword:str) -> str:
-        return f'''toUpper({alias}.name) =~ toUpper(".*{keyword}.*") OR 
-                   toUpper({alias}.id)   =~ toUpper(".*{keyword}.*") OR 
-                   toUpper({alias}.imdb) =~ toUpper(".*{keyword}.*")'''
-    
-    def __compare_against_film(self, alias:str, keyword:str) -> str:
-        return f'''toUpper({alias}.title) =~ toUpper(".*{keyword}.*") OR 
-                   toUpper({alias}.id)    =~ toUpper(".*{keyword}.*") OR 
-                   toUpper({alias}.imdb)  =~ toUpper(".*{keyword}.*")'''
-
-    def actor_exists(self, keyword:str) -> bool:
-        count = self.n4j.query(f'''
-            MATCH (n:Actor)
-            WHERE {self.__compare_against_actor('n', keyword)}
-            RETURN count(n) AS count
-        ''')[0].data()['count']
-        return count > 0
-    
-    def film_exists(self, keyword:str) -> bool:
-        count = self.n4j.query(f'''
-            MATCH (n:Film)
-            WHERE {self.__compare_against_film('n', keyword)}
-            RETURN count(n) AS count
-        ''')[0].data()['count']
-        return count > 0
-    
-    def node_exists(self, keyword:str) -> bool:
-        return self.actor_exists(keyword) or self.film_exists(keyword)
-
-    def get_distance(self, left:str, right:str) -> str:
-        assert self.node_exists(left),  f'No node in the database matches the given keyword: {left}'
-        assert self.node_exists(right), f'No node in the database matches the given keyword: {right}'
-        return json.dumps(self.n4j.query(f'''
-            CALL {{
-                MATCH (left)
-                WHERE {self.__compare_against_actor('left', left)}
-                RETURN left LIMIT 1
-            }}
-            CALL {{
-                MATCH (right) 
-                WHERE {self.__compare_against_actor('right', right)}
-                RETURN right LIMIT 1
-            }}
-            MATCH path=shortestPath((left)-[*]-(right))
-            RETURN length(path) AS distance''')[0].data())
-
-    def get_path(self, left:str, right:str) -> str:
-        assert self.node_exists(left),  f'No node in the database matches the given keyword: {left}'
-        assert self.node_exists(right), f'No node in the database matches the given keyword: {right}'
-        return json.dumps(self.n4j.query(f'''
-            CALL {{
-                MATCH (left)
-                WHERE {self.__compare_against_actor('left', left)}
-                RETURN left LIMIT 1
-            }}
-            CALL {{
-                MATCH (right)
-                WHERE {self.__compare_against_actor('right', right)}
-                RETURN right LIMIT 1
-            }}
-            MATCH path=shortestPath((left)-[*]-(right))
-            RETURN path''')[0].data())
-            
-    def get_graph(self, root:str, depth:int) -> str:
-        assert self.node_exists(root), f'No node in the database matches the given keyword: {root}'
-        # Odd distances are films, even distances are costars,
-        # so depth has to be doubled
-        return json.dumps([result.data() for result in self.n4j.query(f'''
-            MATCH (root:Actor)
-            WHERE {self.__compare_against_actor('root', root)}
-            CALL apoc.path.spanningTree(root, {{ maxLevel: {depth * 2} }})
-            YIELD path
-            RETURN path
-        ''')]) # the graph is returned as a list of paths
-
-    def cypher(self, query:str) -> str:
-        return [result.data() for result in self.n4j.query(query)]
-
 
 class Parser:
     parser: argparse.ArgumentParser
@@ -352,12 +267,8 @@ class Parser:
         self.parser.add_argument('-uri', metavar='<uri>', help='Neo4j database URI')
         self.parser.add_argument('-u', '--user', metavar='<username>', help='Neo4j username')
         self.parser.add_argument('-pw', '--password', metavar='<password>', help='Neo4j password')
-        self.parser.add_argument('-d', '--distance', nargs=2, metavar=('<name|IMDb ID|IMDb URL> <name|IMDb ID|IMDb URL>'), help='Returns the distance between two nodes')
-        self.parser.add_argument('-p', '--path', nargs=2, metavar=('<name|IMDb ID|IMDb URL> <name|IMDb ID|IMDb URL>'), help='Returns the shortest path between two nodes')
-        self.parser.add_argument('-g', '--graph', nargs=2, metavar=('<name|IMDb ID|IMDb URL> <depth>'), help='Returns a graph from the given root node up to the given depth')
-        self.parser.add_argument('-e', '--exists', metavar='<name|title|IMDb ID|IMDb URL>', help='Checks if a node with the given property exists in the database.')
         self.parser.add_argument('--force', action='store_true', help='Force pulling of new data even if a JSON snapshot is present.')
-        self.parser.add_argument('--cypher', metavar='<query>', help='Run a cypher query on the Neo4j database.')
+        self.parser.add_argument('--query', metavar='<query>', help='Run a cypher query on the Neo4j database.')
         self.args = self.parser.parse_args()
 
         # set global variables
@@ -365,14 +276,11 @@ class Parser:
         if self.args.user:     NEO4J_USERNAME = self.args.user
         if self.args.password: NEO4J_PASSWORD = self.args.password
 
-        # handle more complex flags
         if self.args.verbose:        self.__handle_verbose()
+
+        # handle actions
         if self.args.build_database: self.__handle_build_database()
-        if self.args.distance:       self.__handle_distance()
-        if self.args.path:           self.__handle_path()
-        if self.args.graph:          self.__handle_graph()
-        if self.args.exists:         self.__handle_exists()
-        if self.args.cypher:         self.__handle_cypher()
+        if self.args.query:          self.__handle_query()
 
     def __handle_verbose(self):
         global VERBOSE
@@ -393,38 +301,9 @@ class Parser:
         if self.args.cast_limit: CAST_LIMIT = int(self.args.cast_limit)
         DatabaseBuilder(self.args.force).populate_database()
 
-    def __handle_distance(self):
-        left  = self.args.distance[0]
-        right = self.args.distance[1]
-        try:
-            print(DatabaseInterface().get_distance(left, right))
-        except AssertionError as e:
-            log.error(e)
+    def __handle_query(self):
+        print(self.args.query)
+        print(DatabaseBuilder().run_query(self.args.query))
 
-    def __handle_path(self):
-        left  = self.args.path[0]
-        right = self.args.path[1]
-        try:
-            print(DatabaseInterface().get_path(left, right))
-        except AssertionError as e:
-            log.error(e)
-
-    def __handle_graph(self):
-        root  = self.args.graph[0]
-        try:
-            depth = int(self.args.graph[1])
-            try:
-                print(DatabaseInterface().get_graph(root, depth))
-            except AssertionError as e:
-                log.error(e)
-        except TypeError as e:
-            log.error(e)
-
-    def __handle_exists(self):
-        param = self.args.exists
-        print(DatabaseInterface().node_exists(param))
-
-    def __handle_cypher(self):
-        print(DatabaseInterface().cypher(self.args.cypher))
 
 Parser()
