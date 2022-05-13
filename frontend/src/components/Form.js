@@ -26,9 +26,7 @@ class Form extends React.Component {
         this._submit = React.createRef()
         this.state = {
             ...defaultValues,
-            onSubmit: props.onSubmit,
-            leftError: false,
-            rightError: false
+            onSubmit: props.onSubmit
         }
     }
     
@@ -42,39 +40,36 @@ class Form extends React.Component {
     handleSearchBarChange = (event) => {
         this._submit.current.disable()
         var searchbar = this.getRef(event.target.id).current
+        
         const {name, value} = event.target
         if (value === '') {
             this.setState({[name]: ''})
             searchbar.clearError()
-            if (!this.state.modeGraph && (this.state.left != '' || this.state.right != ''))
-                this._submit.current.enable()
         } else {
             fetch(API_URI + 'exists?search=' + value)
                 .then(response => response.json())
                 .then(json => {
                     if (json.nodeExists) {
                         searchbar.clearError()
-                        name === 'left' 
-                            ? this.setState({leftError: false})
-                            : this.setState({rightError: false})
                         this.setState({[name]: value})
-                        if (!this.state.leftError && !this.state.rightError)
-                            this._submit.current.enable()
                     } else {
                         searchbar.error('Nincs ilyen színész / film az adatbázisban!')
-                        name === 'left' 
-                            ? this.setState({leftError: true})
-                            : this.setState({rightError: true})
                         this.setState({[name]: ''})
                     }})
                 .catch((error) => {
-                    console.log(error)
                     searchbar.error('Az adatbázis pillanatnyilag nem elérhető.')
-                    name === 'left' 
-                        ? this.setState({leftError: true})
-                        : this.setState({rightError: true})
+                    console.log(error)
                 })
         }
+        
+        setTimeout(() => {
+            if (this.state.left != '' && 
+               (!this.state.graphMode || (this.state.graphMode && this.state.right != ''))) {
+                this._submit.current.enable()
+            } else {
+                this._submit.current.disable()
+            }
+        }, 650)
     }
 
     handleSliderChange = (event) => this.setState({depth: event.target.value})
