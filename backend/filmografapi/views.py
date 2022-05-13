@@ -2,8 +2,6 @@ from django.http import JsonResponse, HttpRequest
 from neomodel import db
 from typing import Dict
 
-import logging
-
 def compare_against_node(alias:str, keyword:str) -> str:
     """
     Macro that returns a string that compares a node's name/title/imdb ID against a given keyword.
@@ -30,7 +28,6 @@ def nodeExists(request:HttpRequest) -> JsonResponse:
                 WHERE {compare_against_node('node', keyword)}
                 RETURN count(node) > 0
                 ''')[0][0][0]
-            logging.info(JsonResponse({"nodeExists": exists}))
             return JsonResponse({"nodeExists": exists})
         except IndexError:
             return JsonResponse({"nodeExists": False})

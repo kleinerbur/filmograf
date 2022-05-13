@@ -1,10 +1,9 @@
-from django.test import SimpleTestCase
 from .views import *
+from django.test import SimpleTestCase
 from django.test.client import RequestFactory
 from django.http import JsonResponse
 from typing import Set
 import json
-
 import logging
 
 FACTORY = RequestFactory()
