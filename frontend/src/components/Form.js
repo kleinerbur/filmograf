@@ -63,8 +63,8 @@ class Form extends React.Component {
         }
         
         setTimeout(() => {
-            if (this.state.left != '' && 
-               (!this.state.graphMode || (this.state.graphMode && this.state.right != ''))) {
+            if (this.state.left !== '' && 
+               (this.state.modeGraph || (!this.state.modeGraph && this.state.right !== ''))) {
                 this._submit.current.enable()
             } else {
                 this._submit.current.disable()
