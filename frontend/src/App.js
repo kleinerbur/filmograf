@@ -47,6 +47,8 @@ class App extends React.Component {
 					stabilized:   () => this.setState({progressbar_height: 0})
 				}}/>
 		)
+
+		setTimeout(() => this.setState({progressbar_height: 0}), 30000)
 	}
 
 	closeHelpDrawer = () => this.setState({

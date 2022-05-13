@@ -41,11 +41,13 @@ class Form extends React.Component {
         this._submit.current.disable()
         var searchbar = this.getRef(event.target.id).current
         
-        const {name, value} = event.target
+        var {name, value} = event.target
         if (value === '') {
             this.setState({[name]: ''})
             searchbar.clearError()
         } else {
+            value = value.split('?').join('\\?').split('&').join('%&')
+            console.log(value)
             fetch(API_URI + 'exists?search=' + value)
                 .then(response => response.json())
                 .then(json => {
@@ -84,7 +86,7 @@ class Form extends React.Component {
             this._switch.current.graphMode()
             this._right.current.hide()
             this._slider.current.unhide()
-            if (this.state.left == '')
+            if (this.state.left === '')
                 this._submit.current.disable()
         } else {
             this._switch.current.pathMode()
@@ -99,8 +101,8 @@ class Form extends React.Component {
 
         var left  = this.state.left
         var right = this.state.right
-        if (right == '') right = left
-        if (left  == '') left  = right
+        if (right === '') right = left
+        if (left  === '') left  = right
         return(API_URI + 'path?left=' + left + '&right=' + right)
     }
 
@@ -108,8 +110,8 @@ class Form extends React.Component {
         if (!this.state.modeGraph) {
             var left  = this.state.left
             var right = this.state.right
-            if (right == '') right = left
-            if (left  == '') left  = right
+            if (right === '') right = left
+            if (left  === '') left  = right
 
             fetch(API_URI + 'distance?left=' + left + '&right=' + right)
                 .then(response => response.json())
