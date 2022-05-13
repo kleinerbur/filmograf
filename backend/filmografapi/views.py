@@ -1,19 +1,23 @@
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpRequest
 from neomodel import db
 from typing import Dict
-from urllib.request import Request
+
+import logging
 
 def compare_against_node(alias:str, keyword:str) -> str:
     """
     Macro that returns a string that compares a node's name/title/imdb ID against a given keyword.
     Whitespace is ignored.
     """
-    return f'''toUpper({alias}.name)    =~ toUpper(".*{".*".join(keyword.split())}.*") OR 
-               toUpper({alias}.imdb_id) =~ toUpper(".*{".*".join(keyword.split())}.*") OR
-               toUpper({alias}.title)   =~ toUpper(".*{".*".join(keyword.split())}.*")'''
+    return f'''toUpper({alias}.name)           =~ toUpper(".*{".*".join(keyword.split())}.*") OR 
+               toUpper({alias}.title)          =~ toUpper(".*{".*".join(keyword.split())}.*") OR
+               toUpper({alias}.imdb_id)        =~ toUpper(".*{".*".join(keyword.split())}.*") OR
+               "nm" + toUpper({alias}.imdb_id) =~ toUpper(".*{".*".join(keyword.split())}.*") OR
+               "tt" + toUpper({alias}.imdb_id) =~ toUpper(".*{".*".join(keyword.split())}.*") OR
+               {alias}.imdb_uri + "/*"         =~ ".*{keyword}.*"'''
 
 
-def nodeExists(request:Request) -> JsonResponse:
+def nodeExists(request:HttpRequest) -> JsonResponse:
     """
     Checks if a node exists that matches the given keyword.
     Returns a JSON response containing a boolean value with the key 'nodeExists'.
@@ -26,6 +30,7 @@ def nodeExists(request:Request) -> JsonResponse:
                 WHERE {compare_against_node('node', keyword)}
                 RETURN count(node) > 0
                 ''')[0][0][0]
+            logging.info(JsonResponse({"nodeExists": exists}))
             return JsonResponse({"nodeExists": exists})
         except IndexError:
             return JsonResponse({"nodeExists": False})
@@ -62,7 +67,7 @@ def getNode(keyword:str) -> Dict:
         return None
 
 
-def getDistance(request:Request) -> JsonResponse:
+def getDistance(request:HttpRequest) -> JsonResponse:
     """
     Calculates the shortest distance between two nodes that match the given keywords.
     Returns a JSON response containing a numerical value (>=0) with the key 'distance'.
@@ -99,7 +104,7 @@ def getDistance(request:Request) -> JsonResponse:
         return JsonResponse({"distance": distance/2})
 
 
-def getPath(request:Request) -> JsonResponse:
+def getPath(request:HttpRequest) -> JsonResponse:
     """
     Calculates the shortest path between two nodes that match the given keywords.
     Returns a JSON response containing a list of nodes under the key 'nodes'
@@ -161,7 +166,7 @@ def getPath(request:Request) -> JsonResponse:
         return JsonResponse({"nodes": nodes, "edges": edges})
 
 
-def getGraph(request:Request) -> JsonResponse:
+def getGraph(request:HttpRequest) -> JsonResponse:
     """
     Creates a graph centered around a node that matches the given keyword to the given depth.
     Returns a JSON response containing a list of nodes under the key 'nodes'
@@ -173,6 +178,7 @@ def getGraph(request:Request) -> JsonResponse:
     if request.method == 'GET':
         root  = request.GET.get("root", "")
         depth = request.GET.get("depth", 0)
+        if '-' in depth: depth = 0
         try:
             nodes = [row[0] for row in db.cypher_query(f'''
                 CALL {{
