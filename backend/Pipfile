@@ -8,7 +8,6 @@ django = "==4.0.2"
 neomodel = "==4.0.8"
 django-neomodel = "==0.0.7"
 django-cors-headers = "*"
-httplib2 = "*"
 
 [dev-packages]
 

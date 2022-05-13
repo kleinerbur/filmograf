@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "b1a355323b11555df358934f003185f570e8e872abd1e7dfa728e5a062ca593e"
+            "sha256": "85f2e7fa0b4c27405c54678c90449c47f204c047332963a642cd6c7b29715fac"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -69,14 +69,6 @@
             "index": "pypi",
             "version": "==0.0.7"
         },
-        "httplib2": {
-            "hashes": [
-                "sha256:58a98e45b4b1a48273073f905d2961666ecf0fbac4250ea5b47aef259eb5c585",
-                "sha256:8b6a905cb1c79eefd03f8669fd993c36dc341f7c558f056cb5a33b5c2f458543"
-            ],
-            "index": "pypi",
-            "version": "==0.20.4"
-        },
         "neo4j-driver": {
             "hashes": [
                 "sha256:59e16752c1bdd72b43f26786183a7b47c17e16c2ec6afd819390623988dff4ff"
@@ -96,14 +88,6 @@
             ],
             "index": "pypi",
             "version": "==4.0.8"
-        },
-        "pyparsing": {
-            "hashes": [
-                "sha256:2b020ecf7d21b687f219b71ecad3631f644a47f01403fa1d1036b0c6416d70fb",
-                "sha256:5026bae9a10eeaefb61dab2f09052b9f4307d44aee4eda64b309723d8d206bbc"
-            ],
-            "markers": "python_version > '3.0'",
-            "version": "==3.0.9"
         },
         "pytz": {
             "hashes": [
