@@ -24,7 +24,7 @@ class App extends React.Component {
 			poster_src:         '',
 			poster_label:       '',
 			poster_alt:         '',
-			imdb_uri:           ''
+			imdb_uri:           '',
 		}
 		this.canvas = document.getElementById('canvas-container')
 		this.canvasRoot = ReactDOM.createRoot(this.canvas)
@@ -70,18 +70,22 @@ class App extends React.Component {
 
 	openInfoDrawer  = (event) => {
 		this.closeInfoDrawer()
-        var id = this._graph.current._network.current.Network.getSelectedNodes()[0]
-        var selectedNode = this._graph.current.state.nodes.filter(n => n.id === id)[0]
-		this.setState({
-			openInfoDrawer: true,
-			poster_src:     selectedNode.poster,
-			poster_alt:     selectedNode.label + ' teljes méretű posztere.',
-			imdb_uri:       selectedNode.uri
-		})
-		if (selectedNode.group === 'actors') {
+		try {
+			var id = this._graph.current._network.current.Network.getSelectedNodes()[0]
+			var selectedNode = this._graph.current.state.nodes.filter(n => n.id === id)[0]
 			this.setState({
-				poster_label: selectedNode.label
+				openInfoDrawer: true,
+				poster_src:     selectedNode.poster,
+				poster_alt:     selectedNode.label + ' teljes méretű posztere.',
+				imdb_uri:       selectedNode.uri
 			})
+			if (selectedNode.group === 'actors') {
+				this.setState({
+					poster_label: selectedNode.label
+				})
+			}
+		} catch (error) {
+			// no node was selected
 		}
 	}
 
@@ -127,7 +131,7 @@ class App extends React.Component {
 						</a>
 					</Drawer>
 
-					<Drawer className='helpPanel'
+					<Drawer className='help-panel'
 						anchor='left'
 						open={this.state.openHelpDrawer}
 						onKeyDown={this.handleDrawerKeyDown}
@@ -169,7 +173,10 @@ class App extends React.Component {
 					</Drawer>
 				</header>
 				
-				<Fab color='secondary' aria-label='help' onClick={this.openHelpDrawer}
+				<Fab id='help'
+					aria-label='help'
+					color='secondary'
+					onClick={this.openHelpDrawer}
 					sx={{
 						position: 'absolute',
 						bottom: 20,

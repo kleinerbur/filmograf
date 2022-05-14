@@ -25,6 +25,7 @@ class DepthSlider extends React.Component {
                     valueLabelDisplay='on'
                     min={0} 
                     max={this.state.max}
+                    marks
                     defaultValue={this.state.value}
                     onChange={this.state.onChange}/>)
     }

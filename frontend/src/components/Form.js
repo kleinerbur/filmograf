@@ -28,6 +28,7 @@ class Form extends React.Component {
             ...defaultValues,
             onSubmit: props.onSubmit
         }
+		this.controller = new AbortController();
     }
     
     getRef(id) {
@@ -47,8 +48,11 @@ class Form extends React.Component {
             searchbar.clearError()
         } else {
             value = value.split('?').join('\\?').split('&').join('%&')
-            console.log(value)
-            fetch(API_URI + 'exists?search=' + value)
+            if (this.controller.current) {
+                this.controller.abort()
+                this.controller = new AbortController()
+            }
+            fetch(API_URI + 'exists?search=' + value, this.controller.signal)
                 .then(response => response.json())
                 .then(json => {
                     if (json.nodeExists) {
@@ -77,8 +81,8 @@ class Form extends React.Component {
     handleSliderChange = (event) => this.setState({depth: event.target.value})
 
     handleModeSwitch = (event) => {
-        this.setState({modeGraph: event.target.id === 'graphButton'})
-        if (event.target.id === 'graphButton') {
+        this.setState({modeGraph: event.target.id === 'graph-button'})
+        if (event.target.id === 'graph-button') {
             this.setState({
                 distance: '',
                 right: ''

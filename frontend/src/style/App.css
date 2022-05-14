@@ -142,6 +142,10 @@ h2.distanceLabel {
   transform: rotate(-45deg) translate(10%, -60%) !important;
 }
 
+.MuiSlider-mark {
+  color: rgba(255, 255, 255, 0) !important;
+}
+
 
 /* SubmitButton */
 

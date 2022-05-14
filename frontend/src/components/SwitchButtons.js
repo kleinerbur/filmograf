@@ -25,14 +25,14 @@ class SwitchButtons extends React.Component {
                 sx={{border: '2px solid #4da570'}}>
                 <Button
                     ref={this._pathButton}
-                    id='pathButton'
+                    id='path-button'
                     disabled={!this.state.modeGraph}
                     onClick={this.state.onClick}>
                         Út
                 </Button>
                 <Button
                     ref={this._graphButton}
-                    id='graphButton'
+                    id='graph-button'
                     disabled={this.state.modeGraph}
                     onClick={this.state.onClick}>
                         Gráf

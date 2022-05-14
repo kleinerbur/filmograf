@@ -15,7 +15,7 @@ class SubmitButton extends React.Component {
     enable  = () => this.setState({disabled: false})
 
     render() {
-        return (<IconButton
+        return (<IconButton id='submit-button'
                     variant='contained'
                     disabled={this.state.disabled}
                     onClick={this.state.onClick}>
