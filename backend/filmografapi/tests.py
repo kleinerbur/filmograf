@@ -5,6 +5,7 @@ from django.http import JsonResponse
 from typing import Set
 import json
 import logging
+import concurrent.futures
 
 FACTORY = RequestFactory()
 
@@ -149,60 +150,78 @@ class TestGetPath(SimpleTestCase):
         self.assertTrue(node['hidden'])
 
 
+def testEdgeEndpoints(edge, nodes) -> bool:
+    return len([node for node in nodes if node['id'] in [edge['from'], edge['to']]]) == 2
+
+def testIsolatedNode(node, edges) -> bool:
+    return len([edge for edge in edges if node['id'] in [edge['from'], edge['to']]]) > 0
+
 class TestGetGraph(SimpleTestCase):
     def setUp(self):
-        self.actor = ('tom hanks', 0)
-        self.film  = ('green mile', 0)
+        self.actor = ('tom hanks', 2)
+        self.film  = ('green mile', 3)
         self.negative = ('tom hanks', -1)
+        self.null = ('tom hanks', 0)
 
     def makeRequest(self, keywords:Set[str]):
         return FACTORY.get(f'graph?root={keywords[0]}&depth={keywords[1]}')
 
     def testGraph(self):
         response = getGraph(self.makeRequest(self.actor))
-        self.assertEqual(
-            len(getValue(response, 'nodes')),
-            1
-        )
-        self.assertEqual(
-            len(getValue(response, 'edges')),
+        nodes = getValue(response, 'nodes')
+        edges = getValue(response, 'edges')
+        self.assertGreater(
+            len(nodes),
             0
         )
-        node = getValue(response, 'nodes')[0]
-        self.assertEqual(
-            node.keys(),
-            set(['group', 'id', 'label', 'image', 'poster', 'uri'])
+        self.assertGreater(
+            len(edges),
+            0
         )
-        self.assertEqual(
-            node['group'],
-            'actors'
+        self.assertGreater(
+            len(nodes),
+            len(edges)
         )
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            for node in nodes:
+                executor.submit(self.assertTrue(testIsolatedNode(node, edges)))
+            for edge in edges:
+                executor.submit(self.assertTrue(testEdgeEndpoints(edge, nodes)))
+
 
         response = getGraph(self.makeRequest(self.film))
-        self.assertEqual(
-            len(getValue(response, 'nodes')),
-            1
-        )
-        self.assertEqual(
-            len(getValue(response, 'edges')),
+        nodes = getValue(response, 'nodes')
+        edges = getValue(response, 'edges')
+        self.assertGreater(
+            len(nodes),
             0
         )
-        node = getValue(response, 'nodes')[0]
-        self.assertEqual(
-            node.keys(),
-            set(['group', 'id', 'label', 'image', 'poster', 'uri'])
+        self.assertGreater(
+            len(edges),
+            0
         )
-        self.assertEqual(
-            node['group'],
-            'films'
+        self.assertGreater(
+            len(nodes),
+            len(edges)
         )
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            for node in nodes:
+                executor.submit(self.assertTrue(testIsolatedNode(node, edges)))
+            for edge in edges:
+                executor.submit(self.assertTrue(testEdgeEndpoints(edge, nodes)))
 
-        response = getGraph(self.makeRequest(self.negative))
+
+        responseNegative = getGraph(self.makeRequest(self.negative))
+        responseNull = getGraph(self.makeRequest(self.null))
         self.assertEqual(
-            len(getValue(response, 'nodes')),
+            len(getValue(responseNegative, 'nodes')),
             1
         )
         self.assertEqual(
-            len(getValue(response, 'edges')),
+            len(getValue(responseNegative, 'edges')),
             0
+        )
+        self.assertDictEqual(
+            getValue(responseNegative, 'nodes')[0],
+            getValue(responseNull,     'nodes')[0]
         )
