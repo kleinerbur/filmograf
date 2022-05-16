@@ -40,6 +40,12 @@ class Form extends React.Component {
 
     handleSearchBarChange = (event) => {
         this._submit.current.disable()
+        var searchbar = this.getRef(event.target.name).current
+        searchbar.clearError()
+    }
+
+    validateSearchBar = (event) => {
+        this._submit.current.disable()
         var searchbar = this.getRef(event.target.id).current
         searchbar.setState({helperText: 'Keresés...'})
 
@@ -146,14 +152,16 @@ class Form extends React.Component {
                     name="left"
                     label="Színész / film"
                     value={this.state.name}
-                    onFocusOut={this.handleSearchBarChange}
+                    onChange={this.handleSearchBarChange}
+                    onFocusOut={this.validateSearchBar}
                 />
                 <SearchBar
                     ref={this._right}
                     name="right"
                     label="Színész / film"
                     value={this.state.name}
-                    onFocusOut={this.handleSearchBarChange}    
+                    onChange={this.handleSearchBarChange}
+                    onFocusOut={this.validateSearchBar}    
                     hidden={this.state.modeGraph}
                 />
                 <DepthSlider
