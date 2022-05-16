@@ -6,7 +6,7 @@ from imdb import Cinemagoer
 from neo4j import GraphDatabase
 from neo4j.exceptions import ConstraintError
 from os import path
-from typing import Set
+from typing import Any, List, Set
 from tqdm import tqdm
 
 NEO4J_USERNAME = 'guest'
@@ -101,12 +101,12 @@ class Actor:
 
 
 class Neo4jConnection:
-    def __init__(self, uri, user, pwd):
+    def __init__(self, uri:str, user:str, pwd:str) -> None:
         self.uri  = uri
         self.user = user
         self.pwd  = pwd
 
-    def query(self, query, params=None):
+    def query(self, query:str, params:List[Any]=None) -> List[Any]:
         session, response = None, None
         try:
             driver = GraphDatabase.driver(self.uri, auth=(self.user, self.pwd))
@@ -241,18 +241,20 @@ class DatabaseBuilder:
         if VERBOSE: self.progressbar.update()
         
 
-    def run_query(self, query):
+    def run_query(self, query:str) -> List[Any]:
         self.n4j = Neo4jConnection(NEO4J_URI, NEO4J_USERNAME, NEO4J_PASSWORD)
         try:
             results = self.n4j.query(query)
             return [result.data() for result in results]
         except Exception as e:
             log.error(e)
-        
+            return None
+
 
     def toJSON(self) -> str:
         '''Converts the databank to a JSON formatted string.'''
         return json.dumps(self, cls=DatabaseBuilderEncoder, sort_keys=True, indent=4)
+
 
 class Parser:
     parser: argparse.ArgumentParser

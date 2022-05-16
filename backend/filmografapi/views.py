@@ -175,8 +175,11 @@ def getGraph(request:HttpRequest) -> JsonResponse:
     if request.method == 'GET':
         root  = request.GET.get("root", "")
         depth = request.GET.get("depth", 0)
-        if '-' in depth: depth = 0
         try:
+            if '-' in depth:
+                depth = 0
+            else:
+                depth = int(depth) * 2
             nodes = [row[0] for row in db.cypher_query(f'''
                 CALL {{
                     MATCH (root)

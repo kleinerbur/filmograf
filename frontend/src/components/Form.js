@@ -10,7 +10,6 @@ const defaultValues = {
     modeGraph: true,
     left: "",
     right: "",
-    root: "",
     depth: 0,
     distance: ''
 }
@@ -36,6 +35,7 @@ class Form extends React.Component {
         if (id === 'right')  return this._right
         if (id === 'switch') return this._switch
         if (id === 'depth')  return this._slider
+        if (id === 'submit') return this._submit
     }
 
     handleSearchBarChange = (event) => {
@@ -155,11 +155,12 @@ class Form extends React.Component {
                     ref={this._slider}
                     name='depth'
                     value={this.state.depth}
-                    max={4}
+                    max={2}
                     onChange={this.handleSliderChange}
                     hidden={!this.state.modeGraph}
                 />
                 <SubmitButton
+                    name='submit'
                     ref={this._submit}
                     onClick={this.state.onSubmit}
                     disabled={this.state.left === ''}
