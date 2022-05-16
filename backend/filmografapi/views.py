@@ -179,7 +179,7 @@ def getGraph(request:HttpRequest) -> JsonResponse:
             if '-' in depth:
                 depth = 0
             else:
-                depth = int(depth) * 2
+                depth = float(depth) * 2
             nodes = [row[0] for row in db.cypher_query(f'''
                 CALL {{
                     MATCH (root)
