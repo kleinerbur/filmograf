@@ -8,7 +8,7 @@ class SearchBar extends React.Component {
             name:       props.name,
             label:      props.label,
             value:      props.value,
-            onChange:   props.onChange,   
+            onFocusOut: props.onFocusOut,   
             hidden:     props.hidden,
             error:      false,
             helperText: ''
@@ -45,7 +45,7 @@ class SearchBar extends React.Component {
                     error={this.state.error}
                     helperText={this.state.helperText}
                     
-                    onChange={this.state.onChange}/>)
+                    onBlur={this.state.onFocusOut}/>)
     }
 }
 

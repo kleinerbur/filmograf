@@ -49,29 +49,33 @@ describe('UI test', () => {
     it('Input validation', () => {
         cy.visit(APP_URI)
         cy.get('#submit-button').should('be.disabled')
-        cy.get('#left').type('tom hanks', {delay: 20})
-        cy.wait(700)
+        cy.get('#left').type('tom hanks', {delay: 10})
+        cy.get('#submit-button').focus()
+        cy.wait(5000)
         
         cy.get('#left-helper-text').should('not.exist')
         cy.get('#submit-button').should('be.enabled')
         cy.get('#path-button').click()
-        cy.wait(700)
+        cy.wait(5000)
 
-        cy.get('#right').type('aaa', {delay: 20})
-        cy.wait(700)
+        cy.get('#right').type('aaa', {delay: 10})
+        cy.get('#submit-button').focus()
+        cy.wait(5000)
 
         cy.get('#right-helper-text').should('exist')
         cy.contains('Nincs ilyen színész / film az adatbázisban!')
         cy.get('#submit-button').should('be.disabled')
         cy.get('#right').clear()        
         cy.get('#right').type('nm0000158')
-        cy.wait(700)
+        cy.get('#submit-button').focus()
+        cy.wait(5000)
 
         cy.get('#right-helper-text').should('not.exist')
         cy.get('#submit-button').should('be.enabled')
         cy.get('#right').clear()
         cy.get('#right').type('https://www.imdb.com/name/nm0000158/')
-        cy.wait(700)
+        cy.get('#submit-button').focus()
+        cy.wait(5000)
 
         cy.get('#right-helper-text').should('not.exist')
         cy.get('#submit-button').should('be.enabled')
@@ -101,8 +105,9 @@ describe('UI test', () => {
     it('Submit and open info panel', () => {
         cy.visit(APP_URI)
 
-        cy.get('#left').type('tom hanks', {delay:20})
-        cy.wait(1000)
+        cy.get('#left').type('tom hanks', {delay: 10})
+        cy.get('#submit-button').focus()
+        cy.wait(5000)
 
         cy.get('#submit-button').click()
         cy.wait(500)

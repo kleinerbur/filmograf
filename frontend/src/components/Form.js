@@ -41,8 +41,12 @@ class Form extends React.Component {
     handleSearchBarChange = (event) => {
         this._submit.current.disable()
         var searchbar = this.getRef(event.target.id).current
-        
+        searchbar.setState({helperText: 'Keresés...'})
+
+        var left  = this.state.left
+        var right = this.state.right
         var {name, value} = event.target
+
         if (value === '') {
             this.setState({[name]: ''})
             searchbar.clearError()
@@ -58,24 +62,25 @@ class Form extends React.Component {
                     if (json.nodeExists) {
                         searchbar.clearError()
                         this.setState({[name]: value})
+                        name === 'left'
+                            ? left  = value
+                            : right = value
                     } else {
                         searchbar.error('Nincs ilyen színész / film az adatbázisban!')
                         this.setState({[name]: ''})
                     }})
+                .then(() => {
+                    if (left !== '' && (this.state.modeGraph || (this.state.modeGraph && right !== ''))) {
+                        this._submit.current.enable()
+                    } else {
+                        this._submit.current.disable()
+                    }
+                })
                 .catch((error) => {
                     searchbar.error('Az adatbázis pillanatnyilag nem elérhető.')
                     console.log(error)
                 })
         }
-        
-        setTimeout(() => {
-            if (this.state.left !== '' && 
-               (this.state.modeGraph || (!this.state.modeGraph && this.state.right !== ''))) {
-                this._submit.current.enable()
-            } else {
-                this._submit.current.disable()
-            }
-        }, 650)
     }
 
     handleSliderChange = (event) => this.setState({depth: event.target.value})
@@ -141,14 +146,14 @@ class Form extends React.Component {
                     name="left"
                     label="Színész / film"
                     value={this.state.name}
-                    onChange={this.handleSearchBarChange}
+                    onFocusOut={this.handleSearchBarChange}
                 />
                 <SearchBar
                     ref={this._right}
                     name="right"
                     label="Színész / film"
                     value={this.state.name}
-                    onChange={this.handleSearchBarChange}    
+                    onFocusOut={this.handleSearchBarChange}    
                     hidden={this.state.modeGraph}
                 />
                 <DepthSlider
