@@ -70,7 +70,7 @@ class Form extends React.Component {
                         this.setState({[name]: ''})
                     }})
                 .then(() => {
-                    if (left !== '' && (this.state.modeGraph || (this.state.modeGraph && right !== ''))) {
+                    if (left !== '' && (this.state.modeGraph || (!this.state.modeGraph && right !== ''))) {
                         this._submit.current.enable()
                     } else {
                         this._submit.current.disable()

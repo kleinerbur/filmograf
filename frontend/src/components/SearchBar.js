@@ -45,6 +45,7 @@ class SearchBar extends React.Component {
                     error={this.state.error}
                     helperText={this.state.helperText}
                     
+                    onChange={this.clearError}
                     onBlur={this.state.onFocusOut}/>)
     }
 }

@@ -48,34 +48,32 @@ describe('UI test', () => {
 
     it('Input validation', () => {
         cy.visit(APP_URI)
+
+        cy.get('#path-button').click()
+
         cy.get('#submit-button').should('be.disabled')
         cy.get('#left').type('tom hanks', {delay: 10})
+        cy.get('#right').focus()
+        cy.wait(500)
+        cy.get('#right').type('aaaa', {delay: 10})
         cy.get('#submit-button').focus()
-        cy.wait(5000)
+        cy.wait(1000)
         
         cy.get('#left-helper-text').should('not.exist')
-        cy.get('#submit-button').should('be.enabled')
-        cy.get('#path-button').click()
-        cy.wait(5000)
-
-        cy.get('#right').type('aaa', {delay: 10})
-        cy.get('#submit-button').focus()
-        cy.wait(5000)
-
         cy.get('#right-helper-text').should('exist')
         cy.contains('Nincs ilyen színész / film az adatbázisban!')
         cy.get('#submit-button').should('be.disabled')
         cy.get('#right').clear()        
         cy.get('#right').type('nm0000158')
         cy.get('#submit-button').focus()
-        cy.wait(5000)
+        cy.wait(1000)
 
         cy.get('#right-helper-text').should('not.exist')
         cy.get('#submit-button').should('be.enabled')
-        cy.get('#right').clear()
-        cy.get('#right').type('https://www.imdb.com/name/nm0000158/')
+        cy.get('#left').clear()        
+        cy.get('#left').type('imdb.com/name/nm0000158')
         cy.get('#submit-button').focus()
-        cy.wait(5000)
+        cy.wait(1000)
 
         cy.get('#right-helper-text').should('not.exist')
         cy.get('#submit-button').should('be.enabled')
@@ -102,26 +100,18 @@ describe('UI test', () => {
         cy.get('span[data-index=0]').first().click()
     })
 
-    it('Submit and open info panel', () => {
+    it('Submit request', () => {
         cy.visit(APP_URI)
 
         cy.get('#left').type('tom hanks', {delay: 10})
+        cy.get('span[data-index=3]').click()
+        cy.wait(100)
         cy.get('#submit-button').focus()
-        cy.wait(5000)
+        cy.wait(1000)
 
         cy.get('#submit-button').click()
         cy.wait(500)
 
-        cy.get('body').click(850, 520)
-        cy.get('body').dblclick(850, 520)
-        cy.wait(200)
-
-        cy.get('.info-panel').should('exist')
-        cy.get('.poster').should('exist')
-        cy.get('.imdb-button').should('exist')
-        cy.get('.imdb-button').click()
-        cy.wait(200)
-
-        cy.get('body').click('left')
+        cy.get('.vis-network').should('exist')
     })
 })
