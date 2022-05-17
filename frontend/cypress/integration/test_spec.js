@@ -98,6 +98,8 @@ describe('UI test', () => {
         cy.get('span[data-index=1]').click()
         cy.wait(100)
         cy.get('span[data-index=0]').first().click()
+        cy.wait(100)
+        cy.get('span[data-index=3]').click()
     })
 
     it('Submit request', () => {
